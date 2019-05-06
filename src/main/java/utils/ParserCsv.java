@@ -12,13 +12,13 @@ public class ParserCsv {
     public ParserCsv() {
     }
 
-    public static ArrayList <City> parseCSV(String csvFile) {
+    public static ArrayList <WeatherMeasurement> parseCSV(String csvFile) {
 
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
         String[] cityNames= null;
-        ArrayList<City> cities = new ArrayList<>();
+        ArrayList<WeatherMeasurement> cities = new ArrayList<>();
 
 
         try {
@@ -39,16 +39,16 @@ public class ParserCsv {
                     String[] measurements = line.split(cvsSplitBy,-1);
 
                     for(int j=0; j< cityNames.length; ++j ){
-                        City city = new City();
-                        city.setCity(cityNames[j]);
-                        city.setDate(measurements[0]);
-                        city.setWeather_condition(measurements[j+1]);
+                        WeatherMeasurement weatherMeasurement = new WeatherMeasurement();
+                        weatherMeasurement.setCity(cityNames[j]);
+                        weatherMeasurement.setDate(measurements[0]);
+                        weatherMeasurement.setWeather_condition(measurements[j+1]);
 
-                        if(city.getWeather_condition().equals("") || city.getDate().equals(""))
-                            city=null;
+                        if(weatherMeasurement.getWeather_condition().equals("") || weatherMeasurement.getDate().equals(""))
+                            weatherMeasurement =null;
 
 
-                        cities.add(city);
+                        cities.add(weatherMeasurement);
                     }
 
 
@@ -86,7 +86,7 @@ public class ParserCsv {
 
 
 
-        /*ArrayList<City> lineOfCities= new ArrayList<City>();
+        /*ArrayList<WeatherMeasurement> lineOfCities= new ArrayList<WeatherMeasurement>();
 
         ArrayList<String> CityNames= new ArrayList<String>();
         String[] csvValues = csvLine.split(",");
@@ -106,7 +106,7 @@ public class ParserCsv {
      }
 *//*
 
-        City city = new City(
+        WeatherMeasurement city = new WeatherMeasurement(
                 csvCity,
                 csvValues[0], // timestamp
                 csvValues[i] //weather condition

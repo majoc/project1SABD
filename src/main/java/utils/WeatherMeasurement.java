@@ -11,16 +11,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class City implements Serializable {
+public class WeatherMeasurement implements Serializable {
 
     private String city;
     private String date;
     private String weather_condition;
 
-    public City() {
+    public WeatherMeasurement() {
     }
 
-    public City(String city, String date, String weather_condition) {
+    public WeatherMeasurement(String city, String date, String weather_condition) {
         this.city = city;
         this.date = date;
         this.weather_condition = weather_condition;
@@ -51,7 +51,6 @@ public class City implements Serializable {
         //DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         DateTimeFormatter format= DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
         DateTime date=DateTime.parse(this.getDate(), format);
-        System.out.println("MESEEEE"+ date.getMonthOfYear());
         return date.getMonthOfYear();
 
     }
