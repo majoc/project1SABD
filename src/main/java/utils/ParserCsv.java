@@ -38,7 +38,8 @@ public class ParserCsv {
 
                     String[] measurements = line.split(cvsSplitBy,-1);
 
-                    for(int j=0; j< cityNames.length; ++j ){
+
+                    for(int j=0; j< cityNames.length; j++ ){
                         WeatherMeasurement weatherMeasurement = new WeatherMeasurement();
                         weatherMeasurement.setCity(cityNames[j]);
                         weatherMeasurement.setDate(measurements[0]);

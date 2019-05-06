@@ -1,6 +1,7 @@
 package utils;
 
 import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -50,15 +51,18 @@ public class WeatherMeasurement implements Serializable {
 
         //DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         DateTimeFormatter format= DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-        DateTime date=DateTime.parse(this.getDate(), format);
+        LocalDateTime date=LocalDateTime.parse(this.getDate(), format);
         return date.getMonthOfYear();
+
 
     }
 
     public String getYear () {
 
-        DateTime date=DateTime.parse(this.getDate());
+        DateTimeFormatter format= DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime date=LocalDateTime.parse(this.getDate(), format);
         return ((Integer)date.getYear()).toString();
+
     }
 
 
