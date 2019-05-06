@@ -47,12 +47,12 @@ public class WeatherMeasurement implements Serializable {
 
 
 
-    public int getMonth () {
+    public String getMonth () {
 
         //DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         DateTimeFormatter format= DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime date=LocalDateTime.parse(this.getDate(), format);
-        return date.getMonthOfYear();
+        return ((Integer)date.getMonthOfYear()).toString();
 
 
     }
@@ -65,6 +65,13 @@ public class WeatherMeasurement implements Serializable {
 
     }
 
+    public String getDay () {
+
+        DateTimeFormatter format= DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime date=LocalDateTime.parse(this.getDate(), format);
+        return ((Integer)date.getDayOfMonth()).toString();
+
+    }
 
 
     public void setDate(String date) {

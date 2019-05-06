@@ -1,14 +1,14 @@
 package queries;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 import scala.Tuple3;
-import scala.Tuple4;
+import scala.Tuple5;
 import utils.WeatherMeasurement;
 import utils.ParserCsv;
 
@@ -21,6 +21,7 @@ public class Query1 {
 
     public static void main(String[] args) {
 
+
         SparkConf conf = new SparkConf()
                 .setMaster("local")
                 .setAppName("Log Analyzer");
@@ -30,85 +31,52 @@ public class Query1 {
         ArrayList<WeatherMeasurement> measurements =ParserCsv.parseCSV(pathToFile);
         JavaRDD<WeatherMeasurement> w_measurements=sc.parallelize(measurements);
 
-        JavaRDD<WeatherMeasurement> w_meas_notNull=w_measurements.filter(x->x!=null);
-        JavaRDD<Tuple4<String,String,String,String>> citiesPerYear= w_meas_notNull.map(x->new Tuple4<String,String,String,String>(((Integer)x.getMonth()).toString(),x.getYear(),x.getCity(),x.getWeather_condition()));
-        JavaPairRDD<Tuple3<String,String,String>,String> citiesPerYear2 = citiesPerYear.filter(x-> (x._1().equals("3") || x._1().equals("4") ||x._1().equals("5")))
-                .mapToPair(x-> new Tuple2<>(new Tuple3<String, String, String>(x._1(), x._2(), x._3()), x._4()));
+        //filter the null elements and the elements which are not interesting for this query
+        JavaRDD<WeatherMeasurement> w_meas_notNull=w_measurements.filter(x->x!=null && (x.getMonth().equals("3")||x.getMonth().equals("4")||x.getMonth().equals("5"))).cache();
 
-        /*System.out.println("dopo la prima map"+ citiesPerYear2.collect().size());
-        for(int i = 0; i < citiesPerYear.collect().size();i++){
-            System.out.println("SONO QUIIIIIIIIIIIIIIIIIII nel while");
+        //Getting all info in the tuple and implementing a word count based on (day,year,month,city) keys, which basically counts
+        //the number of hours per day carachterized by the key specified weather_condition
+        JavaPairRDD<Tuple5<String,String,String,String,String>,Integer> citiesPerYear= w_meas_notNull.mapToPair(x->new Tuple2<>(new Tuple5<String,String,String,String,String>(x.getDay(),x.getMonth(),x.getYear(),x.getCity(),x.getWeather_condition()),1));
+        JavaPairRDD<Tuple5<String,String,String,String,String>,Integer> citiesPerYearcount= citiesPerYear.reduceByKey((x,y)->x+y);
 
-            System.out.println("TUPLAAAA nellA MAP" + citiesPerYear.collect().get(i));
-        }*/
+        //Filtering couples where weather condition is "sky is clear" and the number of hours per day is greater than 16
+        JavaPairRDD<Tuple5<String,String,String,String,String>,Integer> citiesPerYearcountClear= citiesPerYearcount.filter(x->x._1()._5().equals("sky is clear") && x._2()>=16);
 
-        JavaPairRDD<Tuple3<String,String,String>, Iterable<String>> hoursOfDay=citiesPerYear2.groupByKey();
-
-        /*System.out.println("dopo la prima map"+ hoursOfDay.collect().size());
-        for(int i = 0; i < hoursOfDay.collect().size();i++){
-            System.out.println("SONO QUIIIIIIIIIIIIIIIIIII nel while");
-
-            System.out.println("TUPLAAAA nellA MAP" + hoursOfDay.collect().get(i));
-        }*/
-        JavaPairRDD<Tuple3<String,String,String>,Iterable<String>> hoursOfDayClear=hoursOfDay.filter(new WheatherConditionExtractor());
-        JavaPairRDD<Tuple3<String,String,String>,Integer> daysClear= hoursOfDayClear.mapToPair(x-> new Tuple2<>(x._1(),1));
+        //Implementing a second word count  based on (year,month,city) keys, which counts the number of "sky is clear" days
+        //for the specified month, year and city contained in the key
+        JavaPairRDD<Tuple3<String,String,String>,Integer> daysClear= citiesPerYearcountClear.mapToPair(x-> new Tuple2<>(new Tuple3<>(x._1()._2(),x._1()._3(),x._1()._4()),1));
         JavaPairRDD<Tuple3<String,String,String>,Integer> daysClearCounts= daysClear.reduceByKey((x,y)-> x+y);
+
+        //associating for a given couple (year,city) the list of couples (month,days clear counts)
         JavaPairRDD<Tuple2<String,String>,Tuple2<String, Integer>> monthsClearDaysForYearAndCity= daysClearCounts.mapToPair(x->new Tuple2<>(new Tuple2<>(x._1()._2(),x._1()._3()),new Tuple2<>(x._1()._1(),x._2())));
-        JavaPairRDD<Tuple2<String,String>, Iterable<Tuple2<String,Integer>>> clearMonthsForCityAndForYear= monthsClearDaysForYearAndCity.groupByKey();
-        JavaPairRDD<Tuple2<String,String>, Iterable<Tuple2<String,Integer>>> clearCityPerYearWithMonths=clearMonthsForCityAndForYear.filter(new ClearCityExtractor());
-        JavaPairRDD<String,String> clearCitiesPerYear= clearCityPerYearWithMonths.mapToPair(x->new Tuple2<>(x._1()._1(),x._1()._2()));
-        JavaPairRDD<String,Iterable<String>> finalResult=clearCitiesPerYear.groupByKey();
+
+        //Filtering the previous couples which do not have at least 15 clear days for the month specified in the value
+        //and grouping them by (year,city) key
+        JavaPairRDD<Tuple2<String,String>,Tuple2<String, Integer>> clearCityPerYearWithMonths=monthsClearDaysForYearAndCity.filter(x->x._2()._2()>=15);
+        JavaPairRDD<Tuple2<String,String>, Iterable<Tuple2<String,Integer>>> clearMonthsForCityAndForYear= clearCityPerYearWithMonths.groupByKey();
+
+
+        //filtering the new couples which do not contains three elements(one for each month specified by the query) in the value field
+        JavaPairRDD<Tuple2<String,String>, Iterable<Tuple2<String,Integer>>> clearCityWithYear=clearMonthsForCityAndForYear.filter(x-> Iterables.size(x._2())==3);
+
+        //mapping the previous cuples to new key-value pairs where the yars represents the key and the value is the city
+        //and grouping them by key, sorting by year
+        JavaPairRDD<String,String> clearCitiesPerYear= clearCityWithYear.mapToPair(x->new Tuple2<>(x._1()._1(),x._1()._2()));
+        JavaPairRDD<String,Iterable<String>> finalResult=clearCitiesPerYear.groupByKey().sortByKey();
 
         ArrayList<Tuple2<String,Iterable<String>>> output=Lists.newArrayList(finalResult.collect());
 
-        System.out.println("SONO QUIIIIIIIIIIIIIIIIIII");
-        while(output.iterator().hasNext()){
-            System.out.println("SONO QUIIIIIIIIIIIIIIIIIII nel while");
-
-            System.out.println("TUPLAAAA" + output.iterator().next());
+        for (int i=0; i<output.size();i++){
+            System.out.println("ANNO: "+output.get(i)._1()+"  LISTA CITTA :"+ output.get(i)._2());
         }
+
+
 
 
 
     }
 
 
-    private static class WheatherConditionExtractor implements Function<Tuple2<Tuple3<String, String, String>, Iterable<String>>, Boolean> {
 
-
-        @Override
-        public Boolean call(Tuple2<Tuple3<String, String, String>, Iterable<String>> tuple3IterableTuple2) throws Exception {
-
-            int count=0;
-
-            while(tuple3IterableTuple2._2().iterator().hasNext()){
-
-                if (tuple3IterableTuple2._2().iterator().next().equals("sky is clear"))
-                    count++;
-
-            }
-
-            return (count>=4);
-
-
-        }
-    }
-
-    private static class ClearCityExtractor implements Function<Tuple2<Tuple2<String, String>, Iterable<Tuple2<String, Integer>>>, Boolean> {
-        @Override
-        public Boolean call(Tuple2<Tuple2<String, String>, Iterable<Tuple2<String, Integer>>> tuple2IterableTuple2) throws Exception {
-
-            Boolean isClear=true;
-
-            while(tuple2IterableTuple2._2().iterator().hasNext()){
-                if (tuple2IterableTuple2._2().iterator().next()._2()<1)
-                    isClear=false;
-
-            }
-
-
-            return isClear;
-        }
-    }
 }
 
