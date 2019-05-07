@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="reverseGeocoding">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Scaricati/reverseGeocoding.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

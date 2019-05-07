@@ -1,9 +1,12 @@
 package utils;
 
+import eu.bitm.NominatimReverseGeocoding.NominatimReverseGeocodingJAPI;
+
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 public class CityInfo implements Serializable {
@@ -58,31 +61,25 @@ public class CityInfo implements Serializable {
         this.nation = nation;
     }
 
-  /*  public static void main(String[] args) {
+    public static void main(String[] args) {
 
-        CityInfo city = new CityInfo();
-        city.setLatitude(40.714272);
-        city.setLongitude(-74.005966);
+        Double latitude = 33.749001;
+        Double longitude = -84.387978;
 
-        city.setTimeZone();
+        Locale langEnglish  = new Locale.Builder().setLanguage("en"/*English*/).build();
 
-        System.out.println("Nation" + " " + city.getTimezone() );
+        NominatimReverseGeocodingJAPI nominatim1 = new NominatimReverseGeocodingJAPI();
+        String country = nominatim1.getAdress(latitude, longitude).getCountryCode();
+        Locale countryEnglish = new Locale.Builder().setRegion(country).build();
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        try {
-            Date date = simpleDateFormat.parse("2012-10-01 17:00:00");
-            simpleDateFormat.setTimeZone(TimeZone.getTimeZone(city.getTimezone()));
-
-            System.out.println("ora"+ " " + simpleDateFormat.format(date));
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        String nation = countryEnglish.getDisplayCountry(langEnglish);
 
 
-    }*/
+        System.out.println("Country " + nation);
+
+
+
+    }
 
 
 
