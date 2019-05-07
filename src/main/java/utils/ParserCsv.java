@@ -61,10 +61,6 @@ public class ParserCsv {
 
             }
 
-            /*for(int z=0; z<cities.size();z++) {
-                System.out.println(cities.get(z).getCity()+"  "+ cities.get(z).getDate()+"  "+ cities.get(z).getWeather_condition());
-            }*/
-
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -79,43 +75,6 @@ public class ParserCsv {
                 }
             }
         }
-
-
-
-
-
-
-
-
-        /*ArrayList<WeatherMeasurement> lineOfCities= new ArrayList<WeatherMeasurement>();
-
-        ArrayList<String> CityNames= new ArrayList<String>();
-        String[] csvValues = csvLine.split(",");
-
-        //TODO codizione per scartare tuple
-   *//*     if (csvValues.length != 7)
-            return null;*//*
-
-     int x=0;
-
-     if (x==0){
-         for(int j=1; j< csvValues.length; j++ ){
-             CityNames.add(csvValues[j]);
-         }
-
-
-     }
-*//*
-
-        WeatherMeasurement city = new WeatherMeasurement(
-                csvCity,
-                csvValues[0], // timestamp
-                csvValues[i] //weather condition
-
-        );
-
-        lineOfCities.add(city);*//*
-         */
 
         return cities;
     }

@@ -6,18 +6,20 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple5;
-import utils.WeatherMeasurement;
-import utils.ParserCsv;
+import utils.*;
 
 import java.util.ArrayList;
 
 
 public class Query1 {
 
-    private static String pathToFile = "data/prj1_dataset/weather_description.csv";
+    private static String pathToFileCondition = "data/prj1_dataset/weather_description.csv";
+    private static String pathToFileCities = "data/prj1_dataset/city_attributes.csv";
+
 
     public static void main(String[] args) {
 
@@ -28,19 +30,43 @@ public class Query1 {
         JavaSparkContext sc = new JavaSparkContext(conf);
         sc.setLogLevel("ERROR");
 
-        ArrayList<WeatherMeasurement> measurements =ParserCsv.parseCSV(pathToFile);
+        ArrayList<WeatherMeasurement> measurements =ParserCsv.parseCSV(pathToFileCondition);
+        ArrayList<CityInfo> citiesArray = ParserCsvCity.parseCSV(pathToFileCities);
+
         JavaRDD<WeatherMeasurement> w_measurements=sc.parallelize(measurements);
+
+        JavaRDD<CityInfo> cityInfo = sc.parallelize(citiesArray);
 
         //filter the null elements and the elements which are not interesting for this query
         JavaRDD<WeatherMeasurement> w_meas_notNull=w_measurements.filter(x->x!=null && (x.getMonth().equals("3")||x.getMonth().equals("4")||x.getMonth().equals("5"))).cache();
 
+
+        JavaPairRDD<String,WeatherMeasurement> measuresRDD = w_meas_notNull.mapToPair(x -> new Tuple2<>(x.getCity(),x));
+        JavaPairRDD<String,CityInfo> cityRDD = cityInfo.mapToPair(x -> new Tuple2<>(x.getCityName(),x)).cache();
+
+        JavaPairRDD<String,Tuple2<WeatherMeasurement,CityInfo>> joinRDD = measuresRDD.join(cityRDD);
+
+
+        JavaRDD<WeatherMeasurement> measuresConverted = joinRDD.map(new Function<Tuple2<String, Tuple2<WeatherMeasurement, CityInfo>>, WeatherMeasurement>() {
+            @Override
+            public WeatherMeasurement call(Tuple2<String, Tuple2<WeatherMeasurement, CityInfo>> stringTuple2Tuple2) throws Exception {
+                WeatherMeasurement wm = new WeatherMeasurement();
+                wm.setCity(stringTuple2Tuple2._2()._1().getCity());
+                wm.setDate(ConvertDatetime.convert(stringTuple2Tuple2._2()._2().getTimezone(),stringTuple2Tuple2._2()._1().getDate()));
+                wm.setWeather_condition(stringTuple2Tuple2._2()._1().getWeather_condition());
+                return wm;
+            }
+        });
+
+
+
         //Getting all info in the tuple and implementing a word count based on (day,year,month,city) keys, which basically counts
         //the number of hours per day characterized by the key specified weather_condition
-        JavaPairRDD<Tuple5<String,String,String,String,String>,Integer> citiesPerYear= w_meas_notNull.mapToPair(x->new Tuple2<>(new Tuple5<String,String,String,String,String>(x.getDay(),x.getMonth(),x.getYear(),x.getCity(),x.getWeather_condition()),1));
+        JavaPairRDD<Tuple5<String,String,String,String,String>,Integer> citiesPerYear= measuresConverted.mapToPair(x->new Tuple2<>(new Tuple5<String,String,String,String,String>(x.getDay(),x.getMonth(),x.getYear(),x.getCity(),x.getWeather_condition()),1));
         JavaPairRDD<Tuple5<String,String,String,String,String>,Integer> citiesPerYearcount= citiesPerYear.reduceByKey((x,y)->x+y);
 
         //Filtering couples where weather condition is "sky is clear" and the number of hours per day is greater than 16
-        JavaPairRDD<Tuple5<String,String,String,String,String>,Integer> citiesPerYearcountClear= citiesPerYearcount.filter(x->x._1()._5().equals("sky is clear") && x._2()>=16);
+        JavaPairRDD<Tuple5<String,String,String,String,String>,Integer> citiesPerYearcountClear= citiesPerYearcount.filter(x->x._1()._5().equals("sky is clear") && x._2()>=18);
 
         //Implementing a second word count  based on (year,month,city) keys, which counts the number of "sky is clear" days
         //for the specified month, year and city contained in the key
@@ -72,7 +98,7 @@ public class Query1 {
 
 
 
-
+        sc.stop();
 
     }
 

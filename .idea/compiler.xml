@@ -6,8 +6,13 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="handson-spark" />
         <module name="project1SABD" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="handson-spark" target="1.8" />
+      <module name="project1SABD" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>

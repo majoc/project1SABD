@@ -5,12 +5,10 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.io.Serializable;
+import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.*;
 
 public class WeatherMeasurement implements Serializable {
 
@@ -36,7 +34,6 @@ public class WeatherMeasurement implements Serializable {
     }
 
 
-
     public String getWeather_condition() {
         return weather_condition;
     }
@@ -46,30 +43,29 @@ public class WeatherMeasurement implements Serializable {
     }
 
 
-
-    public String getMonth () {
+    public String getMonth() {
 
         //DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        DateTimeFormatter format= DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime date=LocalDateTime.parse(this.getDate(), format);
-        return ((Integer)date.getMonthOfYear()).toString();
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime date = LocalDateTime.parse(this.getDate(), format);
+        return ((Integer) date.getMonthOfYear()).toString();
 
 
     }
 
-    public String getYear () {
+    public String getYear() {
 
-        DateTimeFormatter format= DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime date=LocalDateTime.parse(this.getDate(), format);
-        return ((Integer)date.getYear()).toString();
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime date = LocalDateTime.parse(this.getDate(), format);
+        return ((Integer) date.getYear()).toString();
 
     }
 
-    public String getDay () {
+    public String getDay() {
 
-        DateTimeFormatter format= DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime date=LocalDateTime.parse(this.getDate(), format);
-        return ((Integer)date.getDayOfMonth()).toString();
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime date = LocalDateTime.parse(this.getDate(), format);
+        return ((Integer) date.getDayOfMonth()).toString();
 
     }
 
@@ -79,7 +75,12 @@ public class WeatherMeasurement implements Serializable {
     }
 
     public String getDate() {
+
+
         return date;
     }
+
+
+
 }
 
