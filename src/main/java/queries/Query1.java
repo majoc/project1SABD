@@ -35,7 +35,7 @@ public class Query1 {
         JavaRDD<WeatherMeasurement> w_meas_notNull=w_measurements.filter(x->x!=null && (x.getMonth().equals("3")||x.getMonth().equals("4")||x.getMonth().equals("5"))).cache();
 
         //Getting all info in the tuple and implementing a word count based on (day,year,month,city) keys, which basically counts
-        //the number of hours per day carachterized by the key specified weather_condition
+        //the number of hours per day characterized by the key specified weather_condition
         JavaPairRDD<Tuple5<String,String,String,String,String>,Integer> citiesPerYear= w_meas_notNull.mapToPair(x->new Tuple2<>(new Tuple5<String,String,String,String,String>(x.getDay(),x.getMonth(),x.getYear(),x.getCity(),x.getWeather_condition()),1));
         JavaPairRDD<Tuple5<String,String,String,String,String>,Integer> citiesPerYearcount= citiesPerYear.reduceByKey((x,y)->x+y);
 
