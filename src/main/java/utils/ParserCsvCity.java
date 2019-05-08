@@ -1,19 +1,21 @@
 package utils;
 
+import eu.bitm.NominatimReverseGeocoding.NominatimReverseGeocodingJAPI;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class ParserCsvCity {
 
-    public static ArrayList<CityInfo> parseCSV(String csvFile) {
+    public static ArrayList<CityInfo> parseCSV(String csvFile,String id) {
 
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
-        String[] cityNames= null;
         ArrayList<CityInfo> cities = new ArrayList<>();
 
 
@@ -36,6 +38,10 @@ public class ParserCsvCity {
                     city.setLongitude(Double.parseDouble(cityInfo[2]));
 
                     city.setTimeZone();
+
+                    if(id.equals("query2")){
+                        city.setNation(ParserCsvCity.getNationfromCoordinates(city));
+                    }
 
                     cities.add(city);
 
@@ -62,6 +68,19 @@ public class ParserCsvCity {
         }
 
         return cities;
+    }
+
+    private static String getNationfromCoordinates(CityInfo city) {
+
+        Locale langEnglish = new Locale.Builder().setLanguage("en").build();
+
+        NominatimReverseGeocodingJAPI nominatim1 = new NominatimReverseGeocodingJAPI();
+        String country = nominatim1.getAdress(city.getLatitude(), city.getLongitude()).getCountryCode();
+        Locale countryEnglish = new Locale.Builder().setRegion(country).build();
+
+        return countryEnglish.getDisplayCountry(langEnglish);
+
+
     }
 
 }

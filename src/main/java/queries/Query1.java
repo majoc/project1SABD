@@ -31,7 +31,7 @@ public class Query1 {
         sc.setLogLevel("ERROR");
 
         ArrayList<WeatherMeasurement> measurements =ParserCsv.parseCSV(pathToFileCondition);
-        ArrayList<CityInfo> citiesArray = ParserCsvCity.parseCSV(pathToFileCities);
+        ArrayList<CityInfo> citiesArray = ParserCsvCity.parseCSV(pathToFileCities,"query1");
 
         JavaRDD<WeatherMeasurement> w_measurements=sc.parallelize(measurements);
 

@@ -46,7 +46,8 @@ public class ParserCsvTemperature {
                             temperatureMeasurement =null;
 
                         if (temperatureMeasurement!=null && !temperatureMeasurement.getTemperature().contains("."))
-                            ParserCsvTemperature.fixBadValues(temperatureMeasurement.getTemperature());
+                            temperatureMeasurement.setTemperature(ParserCsvTemperature.fixBadValues(temperatureMeasurement.getTemperature()));
+
 
 
 
@@ -84,9 +85,25 @@ public class ParserCsvTemperature {
 
     private static String fixBadValues (String value){
 
-        BigDecimal val= new BigDecimal(value).movePointLeft(value.length()-2);
+        BigDecimal val= new BigDecimal(value).movePointLeft(value.length()-3);
 
       return val.toString();
+
+    }
+
+    public static void main(String[] args) {
+
+        String file="data/prj1_dataset/weat_example.csv";
+
+        ArrayList<TemperatureMeasurement> array = ParserCsvTemperature.parseCSV(file);
+
+        for(int i=0; i<array.size();i++) {
+            if(array.get(i).getCity().equals("Houston")) {
+                System.out.println("Temp " + array.get(i).getTemperature());
+            }
+        }
+
+
 
     }
 
