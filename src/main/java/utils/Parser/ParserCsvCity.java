@@ -15,7 +15,7 @@ public class ParserCsvCity {
     public static ArrayList<CityInfo> parseCSV(String csvFile, String id) {
 
         BufferedReader br = null;
-        String line = "";
+        String line;
         String cvsSplitBy = ",";
         ArrayList<CityInfo> cities = new ArrayList<>();
 

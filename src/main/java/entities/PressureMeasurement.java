@@ -12,6 +12,15 @@ public class PressureMeasurement implements Serializable {
     private String date;
     private String pressure;
 
+    public PressureMeasurement() {
+    }
+
+    public PressureMeasurement(String city, String date, String pressure) {
+        this.city = city;
+        this.date = date;
+        this.pressure = pressure;
+    }
+
     public String getCity() {
         return city;
     }

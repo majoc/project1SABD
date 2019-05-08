@@ -1,6 +1,6 @@
 package utils.Parser;
 
-import utils.TemperatureMeasurement;
+import entities.TemperatureMeasurement;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -14,7 +14,7 @@ public class ParserCsvTemperature {
     public static ArrayList<TemperatureMeasurement> parseCSV(String csvFile) {
 
         BufferedReader br = null;
-        String line = "";
+        String line ;
         String cvsSplitBy = ",";
         String[] cityNames= null;
         ArrayList<TemperatureMeasurement> temperatureMeasurements = new ArrayList<>();
@@ -65,8 +65,6 @@ public class ParserCsvTemperature {
             }
 
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

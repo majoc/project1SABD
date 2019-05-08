@@ -12,7 +12,14 @@ public class HumidityMeasurement implements Serializable {
     private String date;
     private String humidity;
 
+    public HumidityMeasurement() {
+    }
 
+    public HumidityMeasurement(String city, String date, String humidity) {
+        this.city = city;
+        this.date = date;
+        this.humidity = humidity;
+    }
 
     public String getCity() {
         return city;

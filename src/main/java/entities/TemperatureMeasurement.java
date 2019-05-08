@@ -1,4 +1,4 @@
-package utils;
+package entities;
 
 import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -11,6 +11,15 @@ public class TemperatureMeasurement implements Serializable {
 
     private String city;
     private String date;
+
+    public TemperatureMeasurement() {
+    }
+
+    public TemperatureMeasurement(String city, String date, String temperature) {
+        this.city = city;
+        this.date = date;
+        this.temperature = temperature;
+    }
 
     public String getCity() {
         return city;

@@ -17,7 +17,7 @@ public class ParserCsvW_Condition {
     public static ArrayList <WeatherMeasurement> parseCSV(String csvFile) {
 
         BufferedReader br = null;
-        String line = "";
+        String line;
         String cvsSplitBy = ",";
         String[] cityNames= null;
         ArrayList<WeatherMeasurement> weatherMeasurements = new ArrayList<>();
@@ -63,8 +63,6 @@ public class ParserCsvW_Condition {
             }
 
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
