@@ -1,29 +1,18 @@
-package utils;
+package entities;
 
-import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.io.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.io.Serializable;
 
-public class WeatherMeasurement implements Serializable {
+public class HumidityMeasurement implements Serializable {
 
     private String city;
     private String date;
-    private String weather_condition;
+    private String humidity;
 
-    public WeatherMeasurement() {
-    }
 
-    public WeatherMeasurement(String city, String date, String weather_condition) {
-        this.city = city;
-        this.date = date;
-        this.weather_condition = weather_condition;
-    }
 
     public String getCity() {
         return city;
@@ -34,12 +23,12 @@ public class WeatherMeasurement implements Serializable {
     }
 
 
-    public String getWeather_condition() {
-        return weather_condition;
+    public String getHumidity() {
+        return humidity;
     }
 
-    public void setWeather_condition(String weather_condition) {
-        this.weather_condition = weather_condition;
+    public void setHumidity(String humidity) {
+        this.humidity= humidity;
     }
 
 
@@ -75,12 +64,6 @@ public class WeatherMeasurement implements Serializable {
     }
 
     public String getDate() {
-
-
         return date;
     }
-
-
-
 }
-

@@ -2,6 +2,8 @@ package queries;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import entities.CityInfo;
+import entities.WeatherMeasurement;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -11,6 +13,8 @@ import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple5;
 import utils.*;
+import utils.Parser.ParserCsvW_Condition;
+import utils.Parser.ParserCsvCity;
 
 import java.util.ArrayList;
 
@@ -30,7 +34,7 @@ public class Query1 {
         JavaSparkContext sc = new JavaSparkContext(conf);
         sc.setLogLevel("ERROR");
 
-        ArrayList<WeatherMeasurement> measurements =ParserCsv.parseCSV(pathToFileCondition);
+        ArrayList<WeatherMeasurement> measurements =ParserCsvW_Condition.parseCSV(pathToFileCondition);
         ArrayList<CityInfo> citiesArray = ParserCsvCity.parseCSV(pathToFileCities,"query1");
 
         JavaRDD<WeatherMeasurement> w_measurements=sc.parallelize(measurements);

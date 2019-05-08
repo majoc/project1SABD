@@ -1,4 +1,6 @@
-package utils;
+package utils.Parser;
+
+import entities.WeatherMeasurement;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -7,9 +9,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class ParserCsv {
+public class ParserCsvW_Condition {
 
-    public ParserCsv() {
+    public ParserCsvW_Condition() {
     }
 
     public static ArrayList <WeatherMeasurement> parseCSV(String csvFile) {
@@ -18,7 +20,7 @@ public class ParserCsv {
         String line = "";
         String cvsSplitBy = ",";
         String[] cityNames= null;
-        ArrayList<WeatherMeasurement> cities = new ArrayList<>();
+        ArrayList<WeatherMeasurement> weatherMeasurements = new ArrayList<>();
 
 
         try {
@@ -48,8 +50,7 @@ public class ParserCsv {
                         if(weatherMeasurement.getWeather_condition().equals("") || weatherMeasurement.getDate().equals(""))
                             weatherMeasurement =null;
 
-
-                        cities.add(weatherMeasurement);
+                        weatherMeasurements.add(weatherMeasurement);
                     }
 
 
@@ -76,7 +77,7 @@ public class ParserCsv {
             }
         }
 
-        return cities;
+        return weatherMeasurements;
     }
 
 

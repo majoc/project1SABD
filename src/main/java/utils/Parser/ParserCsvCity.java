@@ -1,5 +1,6 @@
-package utils;
+package utils.Parser;
 
+import entities.CityInfo;
 import eu.bitm.NominatimReverseGeocoding.NominatimReverseGeocodingJAPI;
 
 import java.io.BufferedReader;
@@ -11,7 +12,7 @@ import java.util.Locale;
 
 public class ParserCsvCity {
 
-    public static ArrayList<CityInfo> parseCSV(String csvFile,String id) {
+    public static ArrayList<CityInfo> parseCSV(String csvFile, String id) {
 
         BufferedReader br = null;
         String line = "";

@@ -1,11 +1,12 @@
-package utils;
+package utils.Parser;
+
+import utils.TemperatureMeasurement;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 

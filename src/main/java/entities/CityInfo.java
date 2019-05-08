@@ -1,6 +1,7 @@
-package utils;
+package entities;
 
 import eu.bitm.NominatimReverseGeocoding.NominatimReverseGeocodingJAPI;
+import utils.TimezoneMapper;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -62,44 +63,6 @@ public class CityInfo implements Serializable {
     public void setNation(String nation) {
         this.nation = nation;
     }
-
-    public static void main(String[] args) {
-
-        Double latitude = 33.749001;
-        Double longitude = -84.387978;
-
-       /*Locale langEnglish  = new Locale.Builder().setLanguage("en").build();
-
-        NominatimReverseGeocodingJAPI nominatim1 = new NominatimReverseGeocodingJAPI();
-        String country = nominatim1.getAdress(latitude, longitude).getCountryCode();
-        Locale countryEnglish = new Locale.Builder().setRegion(country).build();
-
-        String nation = countryEnglish.getDisplayCountry(langEnglish);
-
-
-        System.out.println("Country " + nation);*/
-
-        Double x= 12.3785d;
-        String y= "29.999";
-
-        Double.parseDouble(y);
-
-        //BigDecimal out= new BigDecimal(x.toString()).movePointLeft(x.toString().length()-3);
-
-        //Double out2 =BigDecimal.valueOf(x).setScale(3,RoundingMode.HALF_UP).doubleValue()
-        //;
-
-
-
-        //
-
-
-        System.out.println("Valore " + Double.parseDouble(y));
-
-
-    }
-
-
 
 
 
