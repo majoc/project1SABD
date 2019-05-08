@@ -34,8 +34,8 @@ public class Query2 {
 
 
         SparkConf conf = new SparkConf()
-                .setMaster("local[10]")
-                .setAppName("Log Analyzer");
+                .setMaster("local[*]")
+                .setAppName("Weather Analyzer");
         JavaSparkContext sc = new JavaSparkContext(conf);
         sc.setLogLevel("ERROR");
 
@@ -190,7 +190,7 @@ public class Query2 {
                 new Tuple2<>(new PressureMeasurement(x._2()._1().getCity(), ConvertDatetime.convert(x._2()._2().getTimezone(),x._2()._1().getDate()),x._2()._1().getPressure()),x._2()._2())));
 
 
-        JavaPairRDD<Tuple3<String,String,String>, Tuple5<Double,Double,Integer,Double,Double>> statRDDInitial= joinRDD.mapToPair(x-> new Tuple2<>(new Tuple3<>(x._2()._2().getNation(),x._2()._1().getYear(),x._2()._1().getMonth())
+        JavaPairRDD<Tuple3<String,String,String>, Tuple5<Double,Double,Integer,Double,Double>> statRDDInitial= convertedRDD.mapToPair(x-> new Tuple2<>(new Tuple3<>(x._2()._2().getNation(),x._2()._1().getYear(),x._2()._1().getMonth())
                 ,new Tuple5<>(Double.parseDouble(x._2()._1().getPressure()), Math.pow(Double.parseDouble(x._2()._1().getPressure()),2),1,
                 Double.parseDouble(x._2()._1().getPressure()),Double.parseDouble(x._2()._1().getPressure()))));
 

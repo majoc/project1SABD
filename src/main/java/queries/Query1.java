@@ -31,8 +31,8 @@ public class Query1 {
 
 
         SparkConf conf = new SparkConf()
-                .setMaster("local")
-                .setAppName("Log Analyzer");
+                .setMaster("local[*]")
+                .setAppName("Weather Analyzer");
         JavaSparkContext sc = new JavaSparkContext(conf);
         sc.setLogLevel("ERROR");
 
