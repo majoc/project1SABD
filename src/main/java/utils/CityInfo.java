@@ -4,6 +4,7 @@ import eu.bitm.NominatimReverseGeocoding.NominatimReverseGeocodingJAPI;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -78,13 +79,22 @@ public class CityInfo implements Serializable {
 
         System.out.println("Country " + nation);*/
 
-        String x= "123456";
+        Double x= 12.3785d;
+        String y= "29.999";
+
+        Double.parseDouble(y);
+
+        //BigDecimal out= new BigDecimal(x.toString()).movePointLeft(x.toString().length()-3);
+
+        //Double out2 =BigDecimal.valueOf(x).setScale(3,RoundingMode.HALF_UP).doubleValue()
+        //;
 
 
-        BigDecimal val= new BigDecimal(x).movePointLeft(x.length()-2);
+
+        //
 
 
-        System.out.println("Valore " + val.toString());
+        System.out.println("Valore " + Double.parseDouble(y));
 
 
     }

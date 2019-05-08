@@ -38,22 +38,22 @@ public class Query1 {
         JavaRDD<CityInfo> cityInfo = sc.parallelize(citiesArray);
 
         //filter the null elements and the elements which are not interesting for this query
-        JavaRDD<WeatherMeasurement> w_meas_notNull=w_measurements.filter(x->x!=null && (x.getMonth().equals("3")||x.getMonth().equals("4")||x.getMonth().equals("5"))).cache();
+        JavaRDD<WeatherMeasurement> w_meas_notNull=w_measurements.filter(x->x!=null && (x.getMonth().equals("3")||x.getMonth().equals("4")||x.getMonth().equals("5")));
 
 
         JavaPairRDD<String,WeatherMeasurement> measuresRDD = w_meas_notNull.mapToPair(x -> new Tuple2<>(x.getCity(),x));
-        JavaPairRDD<String,CityInfo> cityRDD = cityInfo.mapToPair(x -> new Tuple2<>(x.getCityName(),x)).cache();
+        JavaPairRDD<String,CityInfo> cityRDD = cityInfo.mapToPair(x -> new Tuple2<>(x.getCityName(),x));
 
         JavaPairRDD<String,Tuple2<WeatherMeasurement,CityInfo>> joinRDD = measuresRDD.join(cityRDD);
 
 
         JavaRDD<WeatherMeasurement> measuresConverted = joinRDD.map(new Function<Tuple2<String, Tuple2<WeatherMeasurement, CityInfo>>, WeatherMeasurement>() {
             @Override
-            public WeatherMeasurement call(Tuple2<String, Tuple2<WeatherMeasurement, CityInfo>> stringTuple2Tuple2) throws Exception {
+            public WeatherMeasurement call(Tuple2<String, Tuple2<WeatherMeasurement, CityInfo>> t) throws Exception {
                 WeatherMeasurement wm = new WeatherMeasurement();
-                wm.setCity(stringTuple2Tuple2._2()._1().getCity());
-                wm.setDate(ConvertDatetime.convert(stringTuple2Tuple2._2()._2().getTimezone(),stringTuple2Tuple2._2()._1().getDate()));
-                wm.setWeather_condition(stringTuple2Tuple2._2()._1().getWeather_condition());
+                wm.setCity(t._2()._1().getCity());
+                wm.setDate(ConvertDatetime.convert(t._2()._2().getTimezone(),t._2()._1().getDate()));
+                wm.setWeather_condition(t._2()._1().getWeather_condition());
                 return wm;
             }
         });
@@ -95,7 +95,6 @@ public class Query1 {
         for (int i=0; i<output.size();i++){
             System.out.println("ANNO: "+output.get(i)._1()+"  LISTA CITTA :"+ output.get(i)._2());
         }
-
 
 
         sc.stop();

@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -50,9 +51,6 @@ public class ParserCsvTemperature {
 
 
 
-
-
-
                         temperatureMeasurements.add(temperatureMeasurement);
                     }
 
@@ -87,7 +85,7 @@ public class ParserCsvTemperature {
 
         BigDecimal val= new BigDecimal(value).movePointLeft(value.length()-3);
 
-      return val.toString();
+        return val.toString();
 
     }
 
