@@ -8,6 +8,7 @@ import java.io.Serializable;
 
 public class TemperatureMeasurement implements Serializable {
 
+
     private String city;
     private String date;
 
