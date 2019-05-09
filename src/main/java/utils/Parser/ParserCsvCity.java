@@ -40,7 +40,7 @@ public class ParserCsvCity {
 
                     city.setTimeZone();
 
-                    if(id.equals("query2")){
+                    if(id.equals("query2") || id.equals("query3")){
                         city.setNation(ParserCsvCity.getNationfromCoordinates(city));
                     }
 

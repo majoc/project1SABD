@@ -65,6 +65,11 @@ public class TemperatureMeasurement implements Serializable {
 
     }
 
+    public String getHour() {
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime date = LocalDateTime.parse(this.getDate(), format);
+        return ((Integer) date.getHourOfDay()).toString();
+    }
 
     public void setDate(String date) {
         this.date = date;
@@ -75,6 +80,8 @@ public class TemperatureMeasurement implements Serializable {
 
         return date;
     }
+
+
 
 
 }
