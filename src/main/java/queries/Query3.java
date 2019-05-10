@@ -66,7 +66,7 @@ public class Query3 {
         JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> joinRDD = cityTemperatures.join(cityCityInfo);
 
         JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> convertedJoin = joinRDD.mapToPair(x->new Tuple2<>(x._1(),
-                new Tuple2<>(new TemperatureMeasurement(x._1(),ConvertDatetime.convert(x._2()._2().getTimezone(),
+                new Tuple2<>(new TemperatureMeasurement(x._2()._1().getCity(),ConvertDatetime.convert(x._2()._2().getTimezone(),
                         x._2()._1().getDate()),x._2()._1().getTemperature()),x._2()._2()))).cache();
 
         JavaPairRDD<Tuple3<String,String,String>,Double> temperatureFirstGroup = temperatureMean(convertedJoin,"6","7","8","9");
@@ -75,7 +75,7 @@ public class Query3 {
 
         JavaPairRDD<Tuple3<String,String,String>,Tuple2<Double,Double>> temperatureJoin = temperatureFirstGroup.join(temperatureSecondGroup);
 
-        JavaPairRDD<Tuple3<String,String,String>,Double> temperatureDiff = temperatureJoin.mapToPair(x->new Tuple2<>(x._1(),Math.abs(x._2()._1()-x._2()._2()))).cache();
+        JavaPairRDD<Tuple3<String,String,String>,Double> temperatureDiff = temperatureJoin.mapToPair(x->new Tuple2<>(x._1(),x._2()._1()-x._2()._2())).cache();
 
 
         JavaPairRDD<Double,Tuple3<String,String,String>> temperatureChanged= temperatureDiff.mapToPair(
@@ -142,7 +142,7 @@ public class Query3 {
                 x._2()._1().getMonth().equals(m4)) && ( Integer.parseInt(x._2()._1().getHour()) <= 15 && Integer.parseInt(x._2()._1().getHour()) >= 12));
 
         JavaPairRDD<Tuple3<String,String,String>,Tuple2<Double,Integer>> temperaturePartial = temperatureFiltered.mapToPair
-                (x->new Tuple2<>(new Tuple3<>(x._2()._2().getNation(),x._2()._1().getYear(),x._1()),new Tuple2<>(Double.parseDouble(x._2()._1().getTemperature()),1)));
+                (x->new Tuple2<>(new Tuple3<>(x._2()._2().getNation(),x._2()._1().getYear(),x._2()._1().getCity()),new Tuple2<>(Double.parseDouble(x._2()._1().getTemperature()),1)));
 
         JavaPairRDD<Tuple3<String,String,String>,Tuple2<Double,Integer>> temperatureByKey = temperaturePartial.reduceByKey(new Function2<Tuple2<Double, Integer>, Tuple2<Double, Integer>, Tuple2<Double, Integer>>() {
             @Override
