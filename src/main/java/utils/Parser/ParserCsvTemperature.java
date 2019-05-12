@@ -88,24 +88,5 @@ public class ParserCsvTemperature {
 
     }
 
-    public static void main(String[] args) {
-
-        String file="data/prj1_dataset/weat_example.csv";
-
-        ArrayList<TemperatureMeasurement> array = ParserCsvTemperature.parseCSV(file);
-
-        for(int i=0; i<array.size();i++) {
-            if(array.get(i).getCity().equals("Houston")) {
-                System.out.println("Temp " + array.get(i).getTemperature());
-            }
-        }
-
-
-
-    }
-
-
-
-
 
 }
