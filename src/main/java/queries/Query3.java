@@ -11,6 +11,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
 import scala.Tuple3;
@@ -19,8 +20,7 @@ import utils.Parser.ParserCsvCity;
 import utils.Parser.ParserCsvTemperature;
 
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 public class Query3 {
@@ -98,6 +98,17 @@ public class Query3 {
         });
 
         JavaPairRDD<Tuple2<String,String>, Iterable<Tuple2<String,Double>>> topAllYearRDD=temperatureDiffGrouped.filter(x->x._1()._2().equals(year1));
+
+        JavaPairRDD<Tuple2<String,String>, ArrayList<Tuple2<String,Double>>> intermediate=temperatureFinal.mapToPair(x-> new Tuple2<>(x._1(),Lists.newArrayList(x._2().iterator()))).cache();
+
+
+
+        //coppie città (indice,nazione,double)
+        /*JavaPairRDD<String, Iterable<Tuple3<Integer,String,Double>>> temperatureSecondYear= intermediate.mapToPair(
+                x-> new Tuple2<>(x._2().iterator().next()._1(), new Tuple3<>(x._2().indexOf(x._2().iterator().next()),x._2().iterator().next()._1(),x._2().iterator().next()._2())))
+
+        );*/
+
         //JavaPairRDD<String, Iterable<Tuple2<String,Double>>> topAllYearRDDFinal= topAllYearRDD.mapToPair(x->new Tuple2<>(x._1()._1(),x._2()));
 
        /* JavaPairRDD<String,Tuple2<Iterable<Tuple2<String,Double>>,Iterable<Tuple2<String,Double>>>> joinedRDD=top3YearRDDFinal.join(topAllYearRDDFinal);
@@ -119,19 +130,14 @@ public class Query3 {
 
         for (int i =0; i< temperatureFinal.collect().size();i++){
                 System.out.println(temperatureFinal.collect().get(i));
-            }
 
-        for (int i =0; i< topAllYearRDD.collect().size();i++){
-            System.out.println(topAllYearRDD.collect().get(i));
         }
 
+        /*for (int i =0; i< topAllYearRDD.collect().size();i++){
+            System.out.println(topAllYearRDD.collect().get(i));
+        }*/
 
-       /* JavaPairRDD<Tuple3<String,String,String>,Iterable<Double>> temperatureDiffTop= temperatureDiffGrouped.mapToPair(new PairFunction<Tuple2<Tuple3<String, String, String>, Iterable<Double>>, Tuple3<String, String, String>, Iterable<Double>>() {
-                @Override
-                public Tuple2<Tuple3<String, String, String>, Iterable<Double>> call(Tuple2<Tuple3<String, String, String>, Iterable<Double>> t) throws Exception {
-                    return new Tuple2<Tuple3<String, String, String>, Iterable<Double>>(t._1(), );
-                }
-            });*/
+
     }
 
     private static JavaPairRDD<Tuple3<String,String,String>,Double> temperatureMean(JavaPairRDD<String, Tuple2<TemperatureMeasurement, CityInfo>> convertedJoin, String m1, String m2, String m3, String m4) {
