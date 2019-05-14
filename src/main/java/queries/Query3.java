@@ -87,8 +87,8 @@ public class Query3 {
         JavaPairRDD<Tuple2<String,String>, Iterable<Tuple2<String,Double>>> temperatureDiffGrouped=temperatureSorted.groupByKey().cache();
 
         JavaPairRDD<Tuple2<String,String>, Iterable<Tuple2<String,Double>>> top3YearRDD=temperatureDiffGrouped.filter(x->x._1()._2().equals(year2));
-        //JavaPairRDD<String, Iterable<Tuple2<String,Double>>> top3YearRDDFinal= top3YearRDD.mapToPair(x->new Tuple2<>(x._1()._1(),x._2()));
 
+        //top 3 chart for 2017
         JavaPairRDD<Tuple2<String,String>, Iterable<Tuple2<String,Double>>> temperatureFinal=  top3YearRDD.mapToPair(new PairFunction<Tuple2<Tuple2<String, String>, Iterable<Tuple2<String, Double>>>, Tuple2<String, String>, Iterable<Tuple2<String, Double>>>() {
                 @Override
                 public Tuple2<Tuple2<String, String>, Iterable<Tuple2<String, Double>>> call(Tuple2<Tuple2<String, String>, Iterable<Tuple2<String, Double>>> t) throws Exception {
@@ -97,45 +97,49 @@ public class Query3 {
 
         });
 
+        //top chart of all cities in 2016
         JavaPairRDD<Tuple2<String,String>, Iterable<Tuple2<String,Double>>> topAllYearRDD=temperatureDiffGrouped.filter(x->x._1()._2().equals(year1));
 
-        JavaPairRDD<Tuple2<String,String>, ArrayList<Tuple2<String,Double>>> intermediate=temperatureFinal.mapToPair(x-> new Tuple2<>(x._1(),Lists.newArrayList(x._2().iterator()))).cache();
+        JavaPairRDD<Tuple2<String,String>, ArrayList<Tuple2<String,Double>>> intermediateFirst=topAllYearRDD.mapToPair(x-> new Tuple2<>(x._1(),Lists.newArrayList(x._2().iterator()))).cache();
+
+
+        JavaPairRDD<Tuple2<String,String>, ArrayList<Tuple2<String,Double>>> intermediateSecond=temperatureFinal.mapToPair(x-> new Tuple2<>(x._1(),Lists.newArrayList(x._2().iterator()))).cache();
 
 
 
-        //coppie città (indice,nazione,double)
-        /*JavaPairRDD<String, Iterable<Tuple3<Integer,String,Double>>> temperatureSecondYear= intermediate.mapToPair(
-                x-> new Tuple2<>(x._2().iterator().next()._1(), new Tuple3<>(x._2().indexOf(x._2().iterator().next()),x._2().iterator().next()._1(),x._2().iterator().next()._2())))
-
-        );*/
-
-        //JavaPairRDD<String, Iterable<Tuple2<String,Double>>> topAllYearRDDFinal= topAllYearRDD.mapToPair(x->new Tuple2<>(x._1()._1(),x._2()));
-
-       /* JavaPairRDD<String,Tuple2<Iterable<Tuple2<String,Double>>,Iterable<Tuple2<String,Double>>>> joinedRDD=top3YearRDDFinal.join(topAllYearRDDFinal);
-
-        JavaPairRDD<String,Tuple2<Iterable<Tuple2<String,Double>>,List<Tuple2<String,Double>>>> finalRDD=joinedRDD.mapToPair(new PairFunction<Tuple2<String, Tuple2<Iterable<Tuple2<String, Double>>, Iterable<Tuple2<String, Double>>>>, String, Tuple2<Iterable<Tuple2<String, Double>>, List<Tuple2<String, Double>>>>() {
+        //generating couples ((city,nation),(position in chart, chart year=2017, temperature_value))
+        JavaPairRDD<Tuple2<String,String>, Tuple3<Integer,String,Double>> temperatureSecondYear= intermediateSecond.flatMapToPair(new PairFlatMapFunction<Tuple2<Tuple2<String, String>, ArrayList<Tuple2<String, Double>>>, Tuple2<String, String>, Tuple3<Integer, String, Double>>() {
             @Override
-            public Tuple2<String, Tuple2<Iterable<Tuple2<String, Double>>, List<Tuple2<String, Double>>>> call(Tuple2<String, Tuple2<Iterable<Tuple2<String, Double>>, Iterable<Tuple2<String, Double>>>> t) throws Exception {
-                List<Tuple2<String, Double>> list= null;
-                while(t._2()._1().iterator().hasNext()){
-                    if((t._2()._2().iterator().next()).equals((t._2()._1().iterator().hasNext())))
-                        list.add(new Tuple2<>(t._2()._2().iterator().next(),t._2()._2().iterator().));
+            public Iterator<Tuple2<Tuple2<String, String>, Tuple3<Integer, String, Double>>> call(Tuple2<Tuple2<String, String>, ArrayList<Tuple2<String, Double>>> t) throws Exception {
+                ArrayList<Tuple2<Tuple2<String,String>, Tuple3<Integer, String, Double>>> arr=new ArrayList<>();
+                t._2().forEach(x-> arr.add(new Tuple2<Tuple2<String,String>, Tuple3<Integer, String, Double>>(new Tuple2<String, String>(x._1(),t._1()._1()),new Tuple3<>(t._2().indexOf(x)+1,t._1()._2(),x._2()))));
 
 
-                }
-                //return new Tuple2<>(t._1(), new Tuple2<>(t._2()._1(), ));
+                return arr.listIterator();
             }
         });
-        */
 
-        for (int i =0; i< temperatureFinal.collect().size();i++){
-                System.out.println(temperatureFinal.collect().get(i));
+        //generating couples ((city,nation),(position in chart, chart year=2016, temperature_value))
+        JavaPairRDD<Tuple2<String,String>, Tuple3<Integer,String,Double>> temperatureFirstYear= intermediateFirst.flatMapToPair(new PairFlatMapFunction<Tuple2<Tuple2<String, String>, ArrayList<Tuple2<String, Double>>>, Tuple2<String, String>, Tuple3<Integer, String, Double>>() {
+            @Override
+            public Iterator<Tuple2<Tuple2<String, String>, Tuple3<Integer, String, Double>>> call(Tuple2<Tuple2<String, String>, ArrayList<Tuple2<String, Double>>> t) throws Exception {
+                ArrayList<Tuple2<Tuple2<String,String>, Tuple3<Integer, String, Double>>> arr=new ArrayList<>();
+                t._2().forEach(x-> arr.add(new Tuple2<Tuple2<String,String>, Tuple3<Integer, String, Double>>(new Tuple2<String, String>(x._1(),t._1()._1()),new Tuple3<>(t._2().indexOf(x)+1,t._1()._2(),x._2()))));
+
+
+                return arr.listIterator();
+            }
+        });
+
+
+        //join based on previous keys
+        JavaPairRDD<Tuple2<String,String>, Tuple2<Tuple3<Integer,String,Double>,Tuple3<Integer,String,Double>>> finalRDD= temperatureSecondYear.join(temperatureFirstYear);
+
+
+        for (int i =0; i< finalRDD.collect().size();i++){
+                System.out.println(finalRDD.collect().get(i));
 
         }
-
-        /*for (int i =0; i< topAllYearRDD.collect().size();i++){
-            System.out.println(topAllYearRDD.collect().get(i));
-        }*/
 
 
     }
