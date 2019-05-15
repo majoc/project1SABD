@@ -1,5 +1,3 @@
-package utils;
-
 import queries.Query1;
 import queries.Query2;
 import queries.Query3;
