@@ -25,7 +25,7 @@ public class Query1 {
     private static String pathToFileCities = "data/prj1_dataset/city_attributes.csv";
 
 
-    public static void main(String[] args) {
+    public static void query1() {
 
         //System.setProperty("hadoop.home.dir","C:\\winutils");
 

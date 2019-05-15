@@ -31,7 +31,7 @@ public class Query3 {
     private static String year2 = "2017";
 
 
-    public static void main(String[] args) {
+    public static void query3() {
 
         System.setProperty("hadoop.home.dir","C:\\winutils");
 
