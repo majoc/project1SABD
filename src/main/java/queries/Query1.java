@@ -4,17 +4,13 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import entities.CityInfo;
 import entities.WeatherMeasurement;
-import org.apache.hadoop.mapred.TextOutputFormat;
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.*;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
+
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple5;
@@ -22,17 +18,16 @@ import utils.*;
 
 import utils.Parser.ParserCSVHeader;
 import utils.Parser.ParserCsvCity;
-import utils.schemas.Output1;
+
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import static org.apache.spark.sql.types.DataTypes.createStructField;
 
 
 public class Query1 {
 
-    private static String pathToHDFS= "hdfs://172.18.0.6:54310/output/output_1.csv";
+    private static String pathToHDFS= "hdfs://localhost:54310/output";
 
     private static String pathToFileCondition = "data/prj1_dataset/weather_description.csv";
     private static String pathToFileCities = "data/prj1_dataset/city_attributes.csv";

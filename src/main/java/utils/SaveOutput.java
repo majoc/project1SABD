@@ -13,7 +13,7 @@ import utils.schemas.Output1;
 
 import java.io.Serializable;
 
-public class SaveOutput {
+public class SaveOutput implements Serializable {
 
     public void saveOutputQuery1(JavaPairRDD<String, Iterable<String>> result,  SparkSession sparkSession, String hdfs ){
         JavaRDD<Row> rows = result.map(new Function<Tuple2<String, Iterable<String>>, Row>() {
@@ -33,7 +33,7 @@ public class SaveOutput {
                 .write()
                 .format("csv")
                 .option("header", "true")
-                .save(hdfs +"/output/output_1.csv");
+                .save(hdfs + "/output1.csv");
 
 
     }
