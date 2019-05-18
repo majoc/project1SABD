@@ -6,7 +6,6 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import entities.CityInfo;
 import entities.TemperatureMeasurement;
-import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
