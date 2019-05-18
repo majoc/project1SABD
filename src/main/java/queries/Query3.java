@@ -6,16 +6,16 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import entities.CityInfo;
 import entities.TemperatureMeasurement;
+import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function2;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.api.java.function.*;
 import scala.Tuple2;
 import scala.Tuple3;
 import utils.ConvertDatetime;
+import utils.Parser.ParserCSVHeader;
 import utils.Parser.ParserCsvCity;
 import utils.Parser.ParserCsvTemperature;
 
@@ -27,13 +27,15 @@ public class Query3 {
 
     private static String pathToFileTemperature = "data/prj1_dataset/temperature.csv";
     private static String pathToFileCities = "data/prj1_dataset/city_attributes.csv";
+
+
     private static String year1 = "2016";
     private static String year2 = "2017";
 
 
     public static void query3() {
 
-        System.setProperty("hadoop.home.dir","C:\\winutils");
+        //System.setProperty("hadoop.home.dir","C:\\winutils");
 
         SparkConf conf = new SparkConf()
                 .setMaster("local[*]")
@@ -43,22 +45,69 @@ public class Query3 {
 
         top3cityMaxDifference(sc);
 
-
         sc.stop();
+
 
     }
 
 
-    private static void top3cityMaxDifference(JavaSparkContext sc) {
+    public static void top3cityMaxDifference( JavaSparkContext sc) {
 
-        ArrayList<TemperatureMeasurement> temperature = ParserCsvTemperature.parseCSV(pathToFileTemperature);
-        ArrayList<CityInfo> citiesArray = ParserCsvCity.parseCSV(pathToFileCities,"query3");
+        //creating cityRDD
+        JavaRDD<String> initialcity= sc.textFile(pathToFileCities/*"hdfs://localhost:54310/data/city_attributes.csv.COMPLETED"*/);
+        String header=initialcity.first();
+        JavaRDD<String> initialCityCleaned = initialcity.filter(x->!x.equals(header));
 
-        JavaRDD<TemperatureMeasurement> temperatureRDD =sc.parallelize(temperature);
+        JavaRDD<CityInfo> cityRDD= initialCityCleaned.map(new Function<String, CityInfo>() {
+            @Override
+            public CityInfo call(String s) throws Exception {
+                return ParserCsvCity.parseLine(s,"query3");
+            }
+        });
 
-        JavaRDD<TemperatureMeasurement> temperatureRDDclean = temperatureRDD.filter(x->x!=null);
 
-        JavaRDD<CityInfo> cityRDD = sc.parallelize(citiesArray);
+        //creating temperature RDD
+        JavaRDD<String> initialtemperature= sc.textFile(pathToFileTemperature/*"hdfs://localhost:54310/data/temperature.csv"*/);
+        String headerCityList=initialtemperature.first();
+        String[] cityList = ParserCSVHeader.getListCities(headerCityList);
+        JavaRDD<String> initialTemperatureCleaned = initialtemperature.filter(x->!x.equals(headerCityList));
+
+
+
+        JavaRDD<TemperatureMeasurement> temperatureInitial =initialTemperatureCleaned.flatMap(new FlatMapFunction<String, TemperatureMeasurement>() {
+            @Override
+            public Iterator<TemperatureMeasurement> call(String s) throws Exception {
+                String cvsSplitBy = ",";
+
+                ArrayList<TemperatureMeasurement> temperatureMeasurements = new ArrayList<>();
+                String[] measurements = s.split(cvsSplitBy,-1);
+
+                Lists.newArrayList(cityList).forEach(city-> temperatureMeasurements.add(new TemperatureMeasurement(city,measurements[0],
+                        measurements[ Lists.newArrayList(cityList).indexOf(city)+1])));
+
+                return temperatureMeasurements.iterator();
+            }
+        });
+
+
+        JavaRDD<TemperatureMeasurement> temperatureFiltered=temperatureInitial.filter(x->(!x.getTemperature().equals("")
+                && !x.getDate().equals("")));
+
+        JavaRDD<TemperatureMeasurement> temperatureRDDclean=temperatureFiltered.map(new Function<TemperatureMeasurement, TemperatureMeasurement>() {
+            @Override
+            public TemperatureMeasurement call(TemperatureMeasurement t) throws Exception {
+                String temperature= t.getTemperature();
+                if (!t.getTemperature().contains(".")){
+                    t.setTemperature(ParserCsvTemperature.fixBadValues(temperature));
+                }
+                return t ;
+            }
+        });
+
+
+        System.out.println("dimensioneeeee  "+temperatureRDDclean.collect().size());
+
+
 
         JavaPairRDD<String,TemperatureMeasurement> cityTemperatures = temperatureRDDclean.mapToPair(x -> new Tuple2<>(x.getCity(),x));
         JavaPairRDD<String,CityInfo> cityCityInfo = cityRDD.mapToPair(x -> new Tuple2<>(x.getCityName(),x));
@@ -135,6 +184,8 @@ public class Query3 {
         //join based on previous keys
         JavaPairRDD<Tuple2<String,String>, Tuple2<Tuple3<Integer,String,Double>,Tuple3<Integer,String,Double>>> finalRDD= temperatureSecondYear.join(temperatureFirstYear);
 
+
+        //finalRDD.coalesce(1).saveAsHadoopFile("hdfs://localhost:54310/flumeprova/file",Tuple2.class,Tuple3.class,TextOutputFormat.class);
 
         for (int i =0; i< finalRDD.collect().size();i++){
                 System.out.println(finalRDD.collect().get(i));

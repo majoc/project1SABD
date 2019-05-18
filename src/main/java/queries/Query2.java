@@ -6,20 +6,20 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple4;
 import scala.Tuple5;
 import utils.ConvertDatetime;
-import utils.Parser.ParserCsvCity;
-import utils.Parser.ParserCsvHumidity;
-import utils.Parser.ParserCsvPressure;
-import utils.Parser.ParserCsvTemperature;
+import utils.Parser.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Query2 {
 
@@ -33,17 +33,25 @@ public class Query2 {
         //System.setProperty("hadoop.home.dir","C:\\winutils");
 
 
+
         SparkConf conf = new SparkConf()
                 .setMaster("local[*]")
                 .setAppName("Weather Analyzer");
         JavaSparkContext sc = new JavaSparkContext(conf);
         sc.setLogLevel("ERROR");
 
+        //creating cityRDD  "hdfs://localhost:54310/data/city_attributes.csv.COMPLETED"
+        JavaRDD<String> initialcity= sc.textFile(pathToFileCities);
+        String header=initialcity.first();
+        JavaRDD<String> initialCityCleaned = initialcity.filter(x->!x.equals(header));
 
-        ArrayList<CityInfo> citiesArray = ParserCsvCity.parseCSV(pathToFileCities,"query2");
+        JavaRDD<CityInfo> cityRDD= initialCityCleaned.map(new Function<String, CityInfo>() {
+            @Override
+            public CityInfo call(String s) throws Exception {
+                return ParserCsvCity.parseLine(s,"query2");
+            }
+        });
 
-
-        JavaRDD<CityInfo> cityRDD = sc.parallelize(citiesArray).cache();
 
         temperatureStatistics(cityRDD,sc);
 
@@ -59,16 +67,47 @@ public class Query2 {
     }
 
 
-    private static void temperatureStatistics(JavaRDD<CityInfo> cityRDD, JavaSparkContext sc){
+    private static void temperatureStatistics(JavaRDD<CityInfo> cityRDD,  JavaSparkContext sc){
 
-        ArrayList<TemperatureMeasurement> temperature = ParserCsvTemperature.parseCSV(pathToFileTemperature);
 
-        JavaRDD<TemperatureMeasurement> temperatureRDD =sc.parallelize(temperature);
 
-        //filter instances with missing temperature values
-        JavaRDD<TemperatureMeasurement> temperatureRDDclean = temperatureRDD.filter(x->x!=null );
+        //creating temperature rdd
 
-        JavaPairRDD<String,TemperatureMeasurement> cityTemperatures = temperatureRDDclean.mapToPair(x -> new Tuple2<>(x.getCity(),x));
+        JavaRDD<String> initialtemperature= sc.textFile(pathToFileTemperature/*"hdfs://localhost:54310/data/temperature.csv"*/);
+        String headerCityList=initialtemperature.first();
+        String[] cityList = ParserCSVHeader.getListCities(headerCityList);
+        JavaRDD<String> initialTemperatureCleaned = initialtemperature.filter(x->!x.equals(headerCityList));
+
+        JavaRDD<TemperatureMeasurement> temperaturesM =initialTemperatureCleaned.flatMap(new FlatMapFunction<String, TemperatureMeasurement>() {
+            @Override
+            public Iterator<TemperatureMeasurement> call(String s) throws Exception {
+                String cvsSplitBy = ",";
+
+                ArrayList<TemperatureMeasurement> temperatureMeasurements = new ArrayList<>();
+                String[] measurements = s.split(cvsSplitBy,-1);
+
+                Lists.newArrayList(cityList).forEach(city-> temperatureMeasurements.add(new TemperatureMeasurement(city,measurements[0],
+                        measurements[ Lists.newArrayList(cityList).indexOf(city)+1])));
+
+                return temperatureMeasurements.iterator();
+            }
+        });
+
+        JavaRDD<TemperatureMeasurement> temperatureFiltered=temperaturesM.filter(x->(!x.getTemperature().equals("")
+                && !x.getDate().equals("")));
+
+        JavaRDD<TemperatureMeasurement> temperatures=temperatureFiltered.map(new Function<TemperatureMeasurement, TemperatureMeasurement>() {
+            @Override
+            public TemperatureMeasurement call(TemperatureMeasurement t) throws Exception {
+                String temperature= t.getTemperature();
+                if (!t.getTemperature().contains(".")){
+                    t.setTemperature(ParserCsvTemperature.fixBadValues(temperature));
+                }
+                return t ;
+            }
+        });
+
+        JavaPairRDD<String,TemperatureMeasurement> cityTemperatures = temperatures.mapToPair(x -> new Tuple2<>(x.getCity(),x));
         JavaPairRDD<String,CityInfo> cityCityInfo = cityRDD.mapToPair(x -> new Tuple2<>(x.getCityName(),x));
 
         JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> joinRDD = cityTemperatures.join(cityCityInfo);
@@ -117,12 +156,32 @@ public class Query2 {
 
     private static void humidityStatistics(JavaRDD<CityInfo> cityRDD, JavaSparkContext sc){
 
-        ArrayList<HumidityMeasurement> humidity = ParserCsvHumidity.parseCSV(pathToFileHumidity);
 
-        JavaRDD<HumidityMeasurement> humidityRDD =sc.parallelize(humidity);
+        JavaRDD<String> initialhumidity= sc.textFile(pathToFileHumidity/*"hdfs://localhost:54310/data/humidity.csv"*/);
+        String headerCityList=initialhumidity.first();
+        String[] cityList = ParserCSVHeader.getListCities(headerCityList);
+        JavaRDD<String> initialHumidityCleaned = initialhumidity.filter(x->!x.equals(headerCityList));
+
+        JavaRDD<HumidityMeasurement> humidityMeasurements=initialHumidityCleaned.flatMap(new FlatMapFunction<String, HumidityMeasurement>() {
+            @Override
+            public Iterator<HumidityMeasurement> call(String s) throws Exception {
+                String cvsSplitBy = ",";
+
+                ArrayList<HumidityMeasurement> humMeasurements = new ArrayList<>();
+                String[] measurements = s.split(cvsSplitBy,-1);
+
+                Lists.newArrayList(cityList).forEach(city-> humMeasurements.add(new HumidityMeasurement(city,measurements[0],
+                        measurements[ Lists.newArrayList(cityList).indexOf(city)+1])));
+
+                return humMeasurements.iterator();
+            }
+        });
 
         //filter instances with missing temperature values
-        JavaRDD<HumidityMeasurement> humidityRDDclean = humidityRDD.filter(x->x!=null );
+        JavaRDD<HumidityMeasurement> humidityRDDclean=humidityMeasurements.filter(x->(!x.getHumidity().equals("")
+                && !x.getDate().equals("")));
+
+
 
         JavaPairRDD<String,HumidityMeasurement> cityHumidities = humidityRDDclean.mapToPair(x -> new Tuple2<>(x.getCity(),x));
         JavaPairRDD<String,CityInfo> cityCityInfo = cityRDD.mapToPair(x -> new Tuple2<>(x.getCityName(),x));
@@ -174,12 +233,33 @@ public class Query2 {
 
     private static void pressureStatistics(JavaRDD<CityInfo> cityRDD, JavaSparkContext sc) {
 
-        ArrayList<PressureMeasurement> pressure = ParserCsvPressure.parseCSV(pathToFilePressure);
 
-        JavaRDD<PressureMeasurement> pressureRDD =sc.parallelize(pressure);
+
+        JavaRDD<String> initialpressure= sc.textFile(pathToFilePressure/*"hdfs://localhost:54310/data/pressure.csv"*/);
+        String headerCityList=initialpressure.first();
+        String[] cityList = ParserCSVHeader.getListCities(headerCityList);
+        JavaRDD<String> initialPressureCleaned = initialpressure.filter(x->!x.equals(headerCityList));
+
+        JavaRDD<PressureMeasurement> pressureMeasurements=initialPressureCleaned.flatMap(new FlatMapFunction<String, PressureMeasurement>() {
+            @Override
+            public Iterator<PressureMeasurement> call(String s) throws Exception {
+                String cvsSplitBy = ",";
+
+                ArrayList<PressureMeasurement> pressMeasurements = new ArrayList<>();
+                String[] measurements = s.split(cvsSplitBy,-1);
+
+                Lists.newArrayList(cityList).forEach(city-> pressMeasurements.add(new PressureMeasurement(city,measurements[0],
+                        measurements[ Lists.newArrayList(cityList).indexOf(city)+1])));
+
+                return pressMeasurements.iterator();
+            }
+        });
 
         //filter instances with missing pressure values
-        JavaRDD<PressureMeasurement> pressureRDDclean = pressureRDD.filter(x->x!=null);
+        JavaRDD<PressureMeasurement> pressureRDDclean=pressureMeasurements.filter(x->(!x.getPressure().equals("")
+                && !x.getDate().equals("")));
+
+
 
         JavaPairRDD<String,PressureMeasurement> cityPressures = pressureRDDclean.mapToPair(x -> new Tuple2<>(x.getCity(),x));
         JavaPairRDD<String,CityInfo> cityCityInfo = cityRDD.mapToPair(x -> new Tuple2<>(x.getCityName(),x));

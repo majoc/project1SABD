@@ -4,47 +4,98 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import entities.CityInfo;
 import entities.WeatherMeasurement;
+import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.sql.*;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple5;
 import utils.*;
-import utils.Parser.ParserCsvW_Condition;
+
+import utils.Parser.ParserCSVHeader;
 import utils.Parser.ParserCsvCity;
+import utils.schemas.Output1;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+
+import static org.apache.spark.sql.types.DataTypes.createStructField;
 
 
 public class Query1 {
+
+    private static String pathToHDFS= "hdfs://172.18.0.6:54310/output/output_1.csv";
 
     private static String pathToFileCondition = "data/prj1_dataset/weather_description.csv";
     private static String pathToFileCities = "data/prj1_dataset/city_attributes.csv";
 
 
+
     public static void query1() {
 
-        //System.setProperty("hadoop.home.dir","C:\\winutils");
+        SparkSession sparkSession= SparkSession.builder()
+                .master("local[*]")
+                .appName("Weather Analyzer")
+                .getOrCreate();
 
 
-        SparkConf conf = new SparkConf()
+
+        /*SparkConf conf = new SparkConf()
                 .setMaster("local[*]")
-                .setAppName("Weather Analyzer");
-        JavaSparkContext sc = new JavaSparkContext(conf);
+                .setAppName("Weather Analyzer");*/
+        JavaSparkContext sc = new JavaSparkContext(sparkSession.sparkContext());
         sc.setLogLevel("ERROR");
 
-        ArrayList<WeatherMeasurement> measurements =ParserCsvW_Condition.parseCSV(pathToFileCondition);
-        ArrayList<CityInfo> citiesArray = ParserCsvCity.parseCSV(pathToFileCities,"query1");
 
-        JavaRDD<WeatherMeasurement> w_measurements=sc.parallelize(measurements);
+        //creating cityRDD
+        JavaRDD<String> initialcity= sc.textFile(pathToFileCities/*"hdfs://localhost:54310/data/city_attributes.csv.COMPLETED"*/);
+        String header=initialcity.first();
+        JavaRDD<String> initialCityCleaned = initialcity.filter(x->!x.equals(header));
 
-        JavaRDD<CityInfo> cityInfo = sc.parallelize(citiesArray);
+        JavaRDD<CityInfo> cityInfo= initialCityCleaned.map(new Function<String, CityInfo>() {
+            @Override
+            public CityInfo call(String s) throws Exception {
+                return ParserCsvCity.parseLine(s,"query1");
+            }
+        }).cache();
 
-        //filter the null elements and the elements which are not interesting for this query
-        JavaRDD<WeatherMeasurement> w_meas_notNull=w_measurements.filter(x->x!=null && (x.getMonth().equals("3")||x.getMonth().equals("4")||x.getMonth().equals("5")));
+
+        //creating weather_condition rdd
+
+        JavaRDD<String> initialweather= sc.textFile(pathToFileCondition/*"hdfs://localhost:54310/data/temperature.csv"*/);
+        String headerCityList=initialweather.first();
+        String[] cityList = ParserCSVHeader.getListCities(headerCityList);
+        JavaRDD<String> initialW_ConditionCleaned = initialweather.filter(x->!x.equals(headerCityList));
+
+        JavaRDD<WeatherMeasurement> w_measurements =initialW_ConditionCleaned.flatMap(new FlatMapFunction<String, WeatherMeasurement>() {
+            @Override
+            public Iterator<WeatherMeasurement> call(String s) throws Exception {
+
+                String cvsSplitBy = ",";
+
+                ArrayList<WeatherMeasurement> weatherMeasurements = new ArrayList<>();
+                String[] measurements = s.split(cvsSplitBy,-1);
+
+                Lists.newArrayList(cityList).forEach(city-> weatherMeasurements.add(new WeatherMeasurement(city,measurements[0],
+                        measurements[ Lists.newArrayList(cityList).indexOf(city)+1])));
+
+                return weatherMeasurements.iterator();
+            }
+        });
+
+
+        //filter the null elements and the elements which are not interesting for this query, or malformed
+        JavaRDD<WeatherMeasurement> w_meas_notNull=w_measurements.filter(x->!x.getWeather_condition().equals("")
+                && !x.getDate().equals("")
+                && (x.getMonth().equals("3")||x.getMonth().equals("4")||x.getMonth().equals("5")));
 
 
         JavaPairRDD<String,WeatherMeasurement> measuresRDD = w_meas_notNull.mapToPair(x -> new Tuple2<>(x.getCity(),x));
@@ -96,12 +147,15 @@ public class Query1 {
         JavaPairRDD<String,String> clearCitiesPerYear= clearCityWithYear.mapToPair(x->new Tuple2<>(x._1()._1(),x._1()._2()));
         JavaPairRDD<String,Iterable<String>> finalResult=clearCitiesPerYear.groupByKey().sortByKey();
 
+        SaveOutput s=new SaveOutput();
+        s.saveOutputQuery1(finalResult,sparkSession,pathToHDFS);
+
+
         ArrayList<Tuple2<String,Iterable<String>>> output=Lists.newArrayList(finalResult.collect());
 
         for (int i=0; i<output.size();i++){
             System.out.println("ANNO: "+output.get(i)._1()+"  LISTA CITTA :"+ output.get(i)._2());
         }
-
 
         sc.stop();
 
