@@ -27,7 +27,7 @@ import java.util.Iterator;
 
 public class Query1 {
 
-    private static String pathToHDFS= "hdfs://localhost:54310/output";
+    private static String pathToHDFS= "hdfs://172.19.0.5:54310/output";
 
     private static String pathToFileCondition = "data/prj1_dataset/weather_description.csv";
     private static String pathToFileCities = "data/prj1_dataset/city_attributes.csv";
@@ -141,15 +141,23 @@ public class Query1 {
         //and grouping them by key, sorting by year
         JavaPairRDD<String,String> clearCitiesPerYear= clearCityWithYear.mapToPair(x->new Tuple2<>(x._1()._1(),x._1()._2()));
         JavaPairRDD<String,Iterable<String>> finalResult=clearCitiesPerYear.groupByKey().sortByKey();
+        JavaRDD<Tuple3<String,String,String>> RDDForSaving = finalResult.flatMap(new FlatMapFunction<Tuple2<String, Iterable<String>>, Tuple3<String, String, String>>() {
+            @Override
+            public Iterator<Tuple3<String, String, String>> call(Tuple2<String, Iterable<String>> t) throws Exception {
+                ArrayList<Tuple3<String,String,String>> arrFinal= new ArrayList<>();
+                t._2().forEach(x->arrFinal.add(new Tuple3<>(Integer.toString(Lists.newArrayList(t._2().iterator()).indexOf(x)+1),t._1(),x)));
+
+                return arrFinal.iterator();
+            }
+        });
 
         SaveOutput s=new SaveOutput();
-        s.saveOutputQuery1(finalResult,sparkSession,pathToHDFS);
+        s.saveOutputQuery1(RDDForSaving,sparkSession,pathToHDFS);
 
 
-        ArrayList<Tuple2<String,Iterable<String>>> output=Lists.newArrayList(finalResult.collect());
 
-        for (int i=0; i<output.size();i++){
-            System.out.println("ANNO: "+output.get(i)._1()+"  LISTA CITTA :"+ output.get(i)._2());
+        for (int i=0; i< RDDForSaving.collect().size();i++){
+            System.out.println("ANNO: "+ RDDForSaving.collect().get(i));
         }
 
         sc.stop();

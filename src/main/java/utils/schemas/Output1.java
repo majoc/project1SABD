@@ -11,11 +11,12 @@ public class Output1 {
 
     public static StructType getSchema() {
         List<StructField> fields = new ArrayList<>();
-        fields.add(DataTypes.createStructField("year", DataTypes.StringType, false));
-        fields.add(DataTypes.createStructField("citiesList",DataTypes.StringType, false));
+        fields.add(DataTypes.createStructField("INDEX", DataTypes.StringType, false));
+        fields.add(DataTypes.createStructField("YEAR",DataTypes.StringType, false));
+        fields.add(DataTypes.createStructField("CITY",DataTypes.StringType, false));
 
 
-         return DataTypes.createStructType(fields);
+        return DataTypes.createStructType(fields);
 
     }
 }
