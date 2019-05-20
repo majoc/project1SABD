@@ -145,7 +145,7 @@ public class Query1 {
             @Override
             public Iterator<Tuple3<String, String, String>> call(Tuple2<String, Iterable<String>> t) throws Exception {
                 ArrayList<Tuple3<String,String,String>> arrFinal= new ArrayList<>();
-                t._2().forEach(x->arrFinal.add(new Tuple3<>(Integer.toString(Lists.newArrayList(t._2().iterator()).indexOf(x)+1),t._1(),x)));
+                t._2().forEach(x->arrFinal.add(new Tuple3<>(/*t._1()+ "_"+*/Integer.toString(Lists.newArrayList(t._2().iterator()).indexOf(x)+1),t._1(),x)));
 
                 return arrFinal.iterator();
             }

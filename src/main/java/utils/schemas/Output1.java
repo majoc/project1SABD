@@ -11,9 +11,9 @@ public class Output1 {
 
     public static StructType getSchema() {
         List<StructField> fields = new ArrayList<>();
-        fields.add(DataTypes.createStructField("INDEX", DataTypes.StringType, false));
-        fields.add(DataTypes.createStructField("YEAR",DataTypes.StringType, false));
-        fields.add(DataTypes.createStructField("CITY",DataTypes.StringType, false));
+        fields.add(DataTypes.createStructField("Index", DataTypes.StringType, false));
+        fields.add(DataTypes.createStructField("Year",DataTypes.StringType, false));
+        fields.add(DataTypes.createStructField("City",DataTypes.StringType, false));
 
 
         return DataTypes.createStructType(fields);
