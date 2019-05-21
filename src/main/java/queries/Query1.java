@@ -156,7 +156,6 @@ public class Query1 {
         //s.saveOutputQuery1(RDDForSaving,sparkSession,pathToHDFS);
 
 
-
         for (int i=0; i< RDDForSaving.collect().size();i++){
             System.out.println("ANNO: "+ RDDForSaving.collect().get(i));
         }
