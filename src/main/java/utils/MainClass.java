@@ -10,8 +10,8 @@ public class MainClass {
 
         //Query1.query1();
 
-        //Query2.query2();
+        Query2.query2();
 
-        Query3.query3();
+        //Query3.query3();
     }
 }

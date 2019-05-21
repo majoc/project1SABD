@@ -15,6 +15,7 @@ import scala.Tuple4;
 import scala.Tuple5;
 import utils.ConvertDatetime;
 import utils.Parser.*;
+import utils.SaveOutput;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -22,6 +23,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Query2 {
+
+    private static String pathToHDFS= "hdfs://172.18.0.5:54310/output";
+
 
     private static String pathToFileTemperature = "data/prj1_dataset/temperature.csv";
     private static String pathToFileHumidity = "data/prj1_dataset/humidity.csv";
@@ -52,13 +56,13 @@ public class Query2 {
                 s -> ParserCsvCity.parseLine(s,"query2"));
 
         //computing temperature statistics
-        temperatureStatistics(cityRDD,sc);
+        temperatureStatistics(cityRDD,sc,sparkSession);
 
         //computing humidity statistics
-        humidityStatistics(cityRDD,sc);
+        humidityStatistics(cityRDD,sc,sparkSession);
 
         //computing pressure statistics
-        pressureStatistics(cityRDD,sc);
+        pressureStatistics(cityRDD,sc,sparkSession);
 
         sc.stop();
 
@@ -68,7 +72,7 @@ public class Query2 {
     }
 
 
-    private static void temperatureStatistics(JavaRDD<CityInfo> cityRDD,  JavaSparkContext sc){
+    private static void temperatureStatistics(JavaRDD<CityInfo> cityRDD,  JavaSparkContext sc,SparkSession sparkSession){
 
 
 
@@ -159,8 +163,8 @@ public class Query2 {
                 ,BigDecimal.valueOf(x._2()._2()).setScale(3,RoundingMode.HALF_UP).doubleValue()
                 ,x._2()._3(),x._2()._4()))));*/
 
-        //SaveOutput s=new SaveOutput();
-        //s.saveOutputQuery2(RDDFinaL,sparkSession,pathToHDFS);
+        SaveOutput s=new SaveOutput();
+        s.saveOutputQuery2(RDDFinal,sparkSession,pathToHDFS);
 
 
 
@@ -174,7 +178,7 @@ public class Query2 {
 
     }
 
-    private static void humidityStatistics(JavaRDD<CityInfo> cityRDD, JavaSparkContext sc){
+    private static void humidityStatistics(JavaRDD<CityInfo> cityRDD, JavaSparkContext sc,SparkSession sparkSession){
 
         //creating humidity rdd
         JavaRDD<String> initialhumidity= sc.textFile(pathToFileHumidity/*"hdfs://localhost:54310/data/humidity.csv"*/);
@@ -254,8 +258,8 @@ public class Query2 {
 
 
 
-        //SaveOutput s=new SaveOutput();
-        //s.saveOutputQuery2(RDDFinaL,sparkSession,pathToHDFS);
+        SaveOutput s=new SaveOutput();
+        s.saveOutputQuery2(RDDFinal,sparkSession,pathToHDFS);
 
         ArrayList<Tuple2<Tuple3<String,String,String>, Tuple4<Double,Double,Double,Double>>> outputPrint=Lists.newArrayList(RDDFinal.collect());
 
@@ -267,7 +271,7 @@ public class Query2 {
 
     }
 
-    private static void pressureStatistics(JavaRDD<CityInfo> cityRDD, JavaSparkContext sc) {
+    private static void pressureStatistics(JavaRDD<CityInfo> cityRDD, JavaSparkContext sc,SparkSession sparkSession) {
 
 
         //creating pressure rdd
@@ -347,8 +351,8 @@ public class Query2 {
 
 
 
-        //SaveOutput s=new SaveOutput();
-        //s.saveOutputQuery2(RDDFinaL,sparkSession,pathToHDFS);
+        SaveOutput s=new SaveOutput();
+        s.saveOutputQuery2(RDDFinal,sparkSession,pathToHDFS);
 
         ArrayList<Tuple2<Tuple3<String,String,String>, Tuple4<Double,Double,Double,Double>>> outputPrint=Lists.newArrayList(RDDFinal.collect());
 
