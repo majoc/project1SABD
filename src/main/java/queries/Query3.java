@@ -27,7 +27,7 @@ import java.util.*;
 
 public class Query3 {
 
-    private static String pathToHDFS= "hdfs://172.19.0.5:54310/output";
+    private static String pathToHDFS= "hdfs://172.18.0.5:54310/output";
 
     private static String pathToFileTemperature = "data/prj1_dataset/temperature.csv";
     private static String pathToFileCities = "data/prj1_dataset/city_attributes.csv";
@@ -213,8 +213,8 @@ public class Query3 {
                 temperatureSecondYear.join(temperatureFirstYear);
 
 
-        //SaveOutput s=new SaveOutput();
-        //s.saveOutputQuery3(finalRDD,sparkSession,pathToHDFS);
+        SaveOutput s=new SaveOutput();
+        s.saveOutputQuery3(finalRDD,sparkSession,pathToHDFS);
 
         for (int i =0; i< finalRDD.collect().size();i++){
                 System.out.println(finalRDD.collect().get(i));

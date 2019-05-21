@@ -33,7 +33,7 @@ public class SaveOutput implements Serializable {
 
     }
 
-    public void saveOutputQuery2(JavaPairRDD<Tuple3<String,String,String>, Tuple4<Double,Double,Double,Double>> result , SparkSession sparkSession, String hdfs ){
+    public void saveOutputQuery2(JavaPairRDD<Tuple3<String,String,String>, Tuple4<Double,Double,Double,Double>> result , SparkSession sparkSession, String hdfs,String path ){
         JavaRDD<Row> rows = result.map((Function<Tuple2<Tuple3<String, String, String>, Tuple4<Double, Double, Double, Double>>, Row>)
                 tuple3Tuple4Tuple2 -> RowFactory.create(
                 tuple3Tuple4Tuple2._1()._1(),
@@ -52,7 +52,7 @@ public class SaveOutput implements Serializable {
                 .write()
                 .format("csv")
                 .option("header", "true")
-                .save(hdfs + "/output2/output2_temperature.csv");
+                .save(hdfs + path);
 
 
     }
@@ -72,7 +72,7 @@ public class SaveOutput implements Serializable {
 
         );
 
-        Dataset<Row> df = sparkSession.sqlContext().createDataFrame(rows, Schemas.getSchema2());
+        Dataset<Row> df = sparkSession.sqlContext().createDataFrame(rows, Schemas.getSchema3());
 
         df.coalesce(1)
                 .write()

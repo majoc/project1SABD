@@ -164,7 +164,7 @@ public class Query2 {
                 ,x._2()._3(),x._2()._4()))));*/
 
         SaveOutput s=new SaveOutput();
-        s.saveOutputQuery2(RDDFinal,sparkSession,pathToHDFS);
+        s.saveOutputQuery2(RDDFinal,sparkSession,pathToHDFS,"/output2/output2_temperature.csv");
 
 
 
@@ -259,7 +259,7 @@ public class Query2 {
 
 
         SaveOutput s=new SaveOutput();
-        s.saveOutputQuery2(RDDFinal,sparkSession,pathToHDFS);
+        s.saveOutputQuery2(RDDFinal,sparkSession,pathToHDFS,"/output2/output2_humidity.csv");
 
         ArrayList<Tuple2<Tuple3<String,String,String>, Tuple4<Double,Double,Double,Double>>> outputPrint=Lists.newArrayList(RDDFinal.collect());
 
@@ -352,7 +352,7 @@ public class Query2 {
 
 
         SaveOutput s=new SaveOutput();
-        s.saveOutputQuery2(RDDFinal,sparkSession,pathToHDFS);
+        s.saveOutputQuery2(RDDFinal,sparkSession,pathToHDFS,"/output2/output2_pressure.csv");
 
         ArrayList<Tuple2<Tuple3<String,String,String>, Tuple4<Double,Double,Double,Double>>> outputPrint=Lists.newArrayList(RDDFinal.collect());
 
