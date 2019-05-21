@@ -34,7 +34,9 @@ public class SaveOutput implements Serializable {
     }
 
     public void saveOutputQuery2(JavaPairRDD<Tuple3<String,String,String>, Tuple4<Double,Double,Double,Double>> result , SparkSession sparkSession, String hdfs ){
-        JavaRDD<Row> rows = result.map((Function<Tuple2<Tuple3<String, String, String>, Tuple4<Double, Double, Double, Double>>, Row>) tuple3Tuple4Tuple2 -> RowFactory.create(tuple3Tuple4Tuple2._1()._1(),
+        JavaRDD<Row> rows = result.map((Function<Tuple2<Tuple3<String, String, String>, Tuple4<Double, Double, Double, Double>>, Row>)
+                tuple3Tuple4Tuple2 -> RowFactory.create(
+                tuple3Tuple4Tuple2._1()._1(),
                 tuple3Tuple4Tuple2._1()._2(),
                 tuple3Tuple4Tuple2._1()._3(),
                 tuple3Tuple4Tuple2._2()._1(),
@@ -51,6 +53,32 @@ public class SaveOutput implements Serializable {
                 .format("csv")
                 .option("header", "true")
                 .save(hdfs + "/output2/output2_temperature.csv");
+
+
+    }
+
+    public void saveOutputQuery3(JavaPairRDD<Tuple2<String,String>, Tuple2<Tuple3<Integer,String,Double>,Tuple3<Integer,String,Double>>> result , SparkSession sparkSession, String hdfs ){
+        JavaRDD<Row> rows = result.map((Function<Tuple2<Tuple2<String, String>, Tuple2<Tuple3<Integer, String, Double>, Tuple3<Integer, String, Double>>>, Row>)
+                tuple2Tuple2Tuple2 -> RowFactory.create(
+                        tuple2Tuple2Tuple2._1()._1(),
+                        tuple2Tuple2Tuple2._1()._2(),
+                        tuple2Tuple2Tuple2._2()._1()._1(),
+                        tuple2Tuple2Tuple2._2()._1()._2(),
+                        tuple2Tuple2Tuple2._2()._1()._3(),
+                        tuple2Tuple2Tuple2._2()._2()._1(),
+                        tuple2Tuple2Tuple2._2()._2()._2(),
+                        tuple2Tuple2Tuple2._2()._2()._3()
+                )
+
+        );
+
+        Dataset<Row> df = sparkSession.sqlContext().createDataFrame(rows, Schemas.getSchema2());
+
+        df.coalesce(1)
+                .write()
+                .format("csv")
+                .option("header", "true")
+                .save(hdfs + "/output3/output3.csv");
 
 
     }

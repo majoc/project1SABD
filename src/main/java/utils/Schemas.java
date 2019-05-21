@@ -32,4 +32,19 @@ public class Schemas {
         return DataTypes.createStructType(fields);
 
     }
+
+    public static StructType getSchema3() {
+        List<StructField> fields = new ArrayList<>();
+        fields.add(DataTypes.createStructField("City", DataTypes.StringType, false));
+        fields.add(DataTypes.createStructField("Nation",DataTypes.StringType, false));
+        fields.add(DataTypes.createStructField("Position",DataTypes.IntegerType, false));
+        fields.add(DataTypes.createStructField("Year",DataTypes.StringType, false));
+        fields.add(DataTypes.createStructField("Diffvalue",DataTypes.DoubleType, false));
+        fields.add(DataTypes.createStructField("Previousposition",DataTypes.IntegerType, false));
+        fields.add(DataTypes.createStructField("Previousyear",DataTypes.StringType, false));
+        fields.add(DataTypes.createStructField("Previousdiffvalue",DataTypes.DoubleType, false));
+
+        return DataTypes.createStructType(fields);
+
+    }
 }
