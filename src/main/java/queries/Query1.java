@@ -16,83 +16,36 @@ import scala.Tuple3;
 import scala.Tuple5;
 import utils.*;
 
-import utils.Parser.ParserCSVHeader;
-import utils.Parser.ParserCsvCity;
+import utils.Parser.ParserCleanerCondition;
 
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 
 
 public class Query1 {
 
-    private static String pathToHDFS= "hdfs://172.18.0.5:54310/output";
-
-    private static String pathToFileCondition = "data/prj1_dataset/weather_description.csv";
-    private static String pathToFileCities = "data/prj1_dataset/city_attributes.csv";
-    //private static String pathToFileCondition = "hdfs://172.18.0.5:54310/dataset/weather_description.csv";
-    //private static String pathToFileCities = "hdfs://172.18.0.5:54310/dataset/city_attributes.csv";
 
 
-
-    public static void query1() {
-
-        SparkSession sparkSession= SparkSession.builder()
-                .master("local[*]")
-                .appName("Weather Analyzer")
-                .getOrCreate();
+    public static void query1(JavaSparkContext jsc, SparkSession session,String pathToHDFS,String pathToFileCondition, String pathToFileCities) {
 
 
-        JavaSparkContext sc = new JavaSparkContext(sparkSession.sparkContext());
-        sc.setLogLevel("ERROR");
+        Long processingTime= System.currentTimeMillis();
 
 
-        //creating cityRDD
-        JavaRDD<String> initialcity= sc.textFile(pathToFileCities/*"hdfs://localhost:54310/data/city_attributes.csv.COMPLETED"*/);
-        String header=initialcity.first();
+        Tuple3<JavaRDD<WeatherMeasurement>,JavaRDD<CityInfo>,Long> cleaned= ParserCleanerCondition.construct_cleanRDD(jsc,pathToFileCities,pathToFileCondition);
 
-        //filtering content except header line
-        JavaRDD<String> initialCityCleaned = initialcity.filter(x->!x.equals(header));
+        //getting cleaning time
+        Long cleaningTime= cleaned._3();
 
-        //creating a city object RDD
-        JavaRDD<CityInfo> cityInfo= initialCityCleaned.map((Function<String, CityInfo>)
-                s -> ParserCsvCity.parseLine(s,"query1")).cache();
-
-
-        //creating weather_condition rdd
-        JavaRDD<String> initialweather= sc.textFile(pathToFileCondition/*"hdfs://localhost:54310/data/temperature.csv"*/);
-
-        //filetering header and constructin measurement RDD
-        String headerCityList=initialweather.first();
-        String[] cityList = ParserCSVHeader.getListCities(headerCityList);
-        JavaRDD<WeatherMeasurement> w_measurements= initialweather.filter(x->!x.equals(headerCityList))
-                   .flatMap((FlatMapFunction<String, WeatherMeasurement>) s -> {
-
-                       String cvsSplitBy = ",";
-
-                       ArrayList<WeatherMeasurement> weatherMeasurements = new ArrayList<>();
-                       String[] measurements = s.split(cvsSplitBy,-1);
-
-                       Lists.newArrayList(cityList).forEach(city-> weatherMeasurements.add(new WeatherMeasurement(city,measurements[0],
-                               measurements[ Lists.newArrayList(cityList).indexOf(city)+1])));
-
-                       return weatherMeasurements.iterator();
-                   });
-
-
-        //filter the null elements and the elements which are not interesting for this query, or malformed
-        JavaRDD<WeatherMeasurement> w_meas_notNull=w_measurements.filter(x->!x.getWeather_condition().equals("")
-                && !x.getDate().equals("")
-                && (x.getMonth().equals("3")||x.getMonth().equals("4")||x.getMonth().equals("5")));
 
         //We need to join city info contained in CityInfo instances with the measumerement datetime
         //in order to convert the UTC value in local hour
 
         //RDD with city as key and wheather measure object as value
-        JavaPairRDD<String,WeatherMeasurement> measuresRDD = w_meas_notNull.mapToPair(x -> new Tuple2<>(x.getCity(),x));
+        JavaPairRDD<String,WeatherMeasurement> measuresRDD = cleaned._1().mapToPair(x -> new Tuple2<>(x.getCity(),x));
         //RDD with city as key and CityInfo object as value
-        JavaPairRDD<String,CityInfo> cityRDD = cityInfo.mapToPair(x -> new Tuple2<>(x.getCityName(),x));
+        JavaPairRDD<String,CityInfo> cityRDD = cleaned._2().mapToPair(x -> new Tuple2<>(x.getCityName(),x));
 
         //Applying inner join between previous RDD and saving relevant info in measurement object
         //with converted datetime
@@ -155,14 +108,25 @@ public class Query1 {
 
         //Saving output as
         SaveOutput s=new SaveOutput();
-        s.saveOutputQuery1(RDDForSaving,sparkSession,pathToHDFS);
+        s.saveOutputQuery1(RDDForSaving,session,pathToHDFS);
 
 
-        for (int i=0; i< RDDForSaving.collect().size();i++){
-            System.out.println("ANNO: "+ RDDForSaving.collect().get(i));
-        }
 
-        sc.stop();
+
+        processingTime=System.currentTimeMillis()-processingTime;
+        Tuple2 tupleTime=new Tuple2<>(processingTime,cleaningTime);
+
+        ArrayList<Tuple2<Long,Long>> performance= new ArrayList<>();
+        performance.add(tupleTime);
+
+        JavaRDD<Tuple2<Long,Long>> perfTime=jsc.parallelize(performance);
+
+        s.saveTimes(perfTime,session,pathToHDFS,"times1.csv");
+
+
+        System.out.println("TEMPO PROCESSAMENTO (ms) " +processingTime+ "  TEMPO PREPROCESSING (ms) " + cleaningTime);
+
+
 
     }
 

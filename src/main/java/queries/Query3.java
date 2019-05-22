@@ -14,9 +14,6 @@ import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 import scala.Tuple3;
 import utils.ConvertDatetime;
-import utils.Parser.ParserCSVHeader;
-import utils.Parser.ParserCsvCity;
-import utils.Parser.ParserCsvTemperature;
 import utils.SaveOutput;
 
 
@@ -27,81 +24,34 @@ import java.util.*;
 
 public class Query3 {
 
-    private static String pathToHDFS= "hdfs://172.18.0.5:54310/output";
-
-    private static String pathToFileTemperature = "data/prj1_dataset/temperature.csv";
-    private static String pathToFileCities = "data/prj1_dataset/city_attributes.csv";
-
 
     private static String year1 = "2016";
     private static String year2 = "2017";
 
 
-    public static void query3() {
+    public static void query3(JavaSparkContext sc, SparkSession sparkSession,JavaRDD<CityInfo> cityRDD, JavaRDD<TemperatureMeasurement> temperatures, Long partialTime, String pathToHDFS) {
 
         //System.setProperty("hadoop.home.dir","C:\\winutils");
 
-        SparkSession sparkSession= SparkSession.builder()
-                .master("local[*]")
-                .appName("Weather Analyzer")
-                .getOrCreate();
-        JavaSparkContext sc = new JavaSparkContext(sparkSession.sparkContext());
-        sc.setLogLevel("ERROR");
 
-        top3cityMaxDifference(sc, sparkSession);
+        top3cityMaxDifference(sc, sparkSession, cityRDD,temperatures,partialTime,pathToHDFS);
 
-        sc.stop();
+
 
 
     }
 
 
-    public static void top3cityMaxDifference( JavaSparkContext sc, SparkSession sparkSession) {
+    public static void top3cityMaxDifference( JavaSparkContext sc, SparkSession sparkSession,JavaRDD<CityInfo> cityRDD, JavaRDD<TemperatureMeasurement> temperatures, Long partialTime, String pathToHDFS) {
 
-        //creating cityRDD
-        JavaRDD<String> initialcity= sc.textFile(pathToFileCities/*"hdfs://localhost:54310/data/city_attributes.csv.COMPLETED"*/);
-        String header=initialcity.first();
-        JavaRDD<String> initialCityCleaned = initialcity.filter(x->!x.equals(header));
-
-        JavaRDD<CityInfo> cityRDD= initialCityCleaned.map((Function<String, CityInfo>) s -> ParserCsvCity.parseLine(s,"query3"));
+        Long processingTime= System.currentTimeMillis();
 
 
-        //creating temperature RDD
-        JavaRDD<String> initialtemperature= sc.textFile(pathToFileTemperature/*"hdfs://localhost:54310/data/temperature.csv"*/);
-        String headerCityList=initialtemperature.first();
-        String[] cityList = ParserCSVHeader.getListCities(headerCityList);
-        JavaRDD<String> initialTemperatureCleaned = initialtemperature.filter(x->!x.equals(headerCityList));
-
-
-
-        JavaRDD<TemperatureMeasurement> temperatureInitial =initialTemperatureCleaned.flatMap((FlatMapFunction<String, TemperatureMeasurement>) s -> {
-            String cvsSplitBy = ",";
-
-            ArrayList<TemperatureMeasurement> temperatureMeasurements = new ArrayList<>();
-            String[] measurements = s.split(cvsSplitBy,-1);
-
-            Lists.newArrayList(cityList).forEach(city-> temperatureMeasurements.add(new TemperatureMeasurement(city,measurements[0],
-                    measurements[ Lists.newArrayList(cityList).indexOf(city)+1])));
-
-            return temperatureMeasurements.iterator();
-        });
-
-
-        //filtering missign values and reconstructing malformed ones
-        JavaRDD<TemperatureMeasurement> temperatureFiltered=temperatureInitial.filter(x->(!x.getTemperature().equals("")
-                && !x.getDate().equals("")));
-
-        JavaRDD<TemperatureMeasurement> temperatureRDDclean=temperatureFiltered.map((Function<TemperatureMeasurement, TemperatureMeasurement>) t -> {
-            String temperature= t.getTemperature();
-            if (!t.getTemperature().contains(".")){
-                t.setTemperature(ParserCsvTemperature.fixBadValues(temperature));
-            }
-            return t ;
-        });
-
+        //getting cleaning time
+        Long cleaningTime= partialTime;
 
         // constructing RDD for subsequent join
-        JavaPairRDD<String,TemperatureMeasurement> cityTemperatures = temperatureRDDclean.mapToPair(x -> new Tuple2<>(x.getCity(),x));
+        JavaPairRDD<String,TemperatureMeasurement> cityTemperatures = temperatures.mapToPair(x -> new Tuple2<>(x.getCity(),x));
         JavaPairRDD<String,CityInfo> cityCityInfo = cityRDD.mapToPair(x -> new Tuple2<>(x.getCityName(),x));
 
         JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> convertedJoin  = cityTemperatures
@@ -216,10 +166,22 @@ public class Query3 {
         SaveOutput s=new SaveOutput();
         s.saveOutputQuery3(finalRDD,sparkSession,pathToHDFS);
 
-        for (int i =0; i< finalRDD.collect().size();i++){
-                System.out.println(finalRDD.collect().get(i));
+        processingTime=System.currentTimeMillis()-processingTime;
+        Tuple2 tupleTime=new Tuple2<>(processingTime,cleaningTime);
 
-        }
+        ArrayList<Tuple2<Long,Long>> performance= new ArrayList<>();
+        performance.add(tupleTime);
+
+        JavaRDD<Tuple2<Long,Long>> perfTime=sc.parallelize(performance);
+
+        s.saveTimes(perfTime,sparkSession,pathToHDFS,"times3.csv");
+
+
+        System.out.println("TEMPO PROCESSAMENTO (ms) " +processingTime+ "  TEMPO PREPROCESSING (ms) " + cleaningTime);
+
+
+
+
 
 
     }
@@ -249,7 +211,7 @@ public class Query3 {
                         Tuple2<Double, Integer>>)
                         (t1, t2) -> new Tuple2<>(t1._1()+t2._1(),t1._2()+t2._2()));
 
-        //return an RDD in which key is the triple (nation, year,city) and the value is the temperature mean
+        //return an RDD in which key is the triple (nation, year, city) and the value is the temperature mean
         return temperatureByKey.mapToPair(x->new Tuple2<>(x._1(),x._2()._1()/x._2()._2()));
 
 

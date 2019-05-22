@@ -47,4 +47,14 @@ public class Schemas {
         return DataTypes.createStructType(fields);
 
     }
+
+    public static StructType getSchemaTimes() {
+        List<StructField> fields = new ArrayList<>();
+        fields.add(DataTypes.createStructField("Processingtime", DataTypes.LongType, false));
+        fields.add(DataTypes.createStructField("Cleaningtime", DataTypes.LongType, false));
+
+
+        return DataTypes.createStructType(fields);
+
+    }
 }

@@ -82,4 +82,20 @@ public class SaveOutput implements Serializable {
 
 
     }
+
+    public void saveTimes(JavaRDD<Tuple2<Long,Long>> result, SparkSession sparkSession, String hdfs, String filename ){
+        JavaRDD<Row> rows=result.map((Function<Tuple2<Long, Long>, Row>) longLongTuple2 -> RowFactory.create(
+                longLongTuple2._1(),
+                longLongTuple2._2()
+        ));
+
+        Dataset<Row> df = sparkSession.sqlContext().createDataFrame(rows, Schemas.getSchemaTimes());
+
+        df.coalesce(1)
+                .write()
+                .format("csv")
+                .option("header", "true")
+                .save(hdfs + "/times/"+filename);
+
+    }
 }
