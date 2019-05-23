@@ -13,12 +13,14 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.12</artifactId>
             <version>2.4.1</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_2.12</artifactId>
             <version>2.4.1</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.surefire</groupId>
@@ -34,6 +36,11 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20080701</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geocoding</groupId>
+            <artifactId>geocoding</artifactId>
+            <version>1.1</version>
         </dependency>
 
     </dependencies>
@@ -74,6 +81,7 @@
                             <mainClass>utils.MainClass</mainClass>
                         </manifest>
                     </archive>
+                    
                 </configuration>
             </plugin>
 

@@ -1,6 +1,10 @@
-  <configuration>
+<configuration>
       <property>
           <name>fs.defaultFS</name>
-          <value>hdfs://master:54310</value>
+          <value>filesystem</value>
+      </property>
+      <property>
+          <name>fs.default.name</name>
+          <value>hdfs://master.hadoopnet:54310</value>
       </property>
   </configuration>
