@@ -17,19 +17,25 @@ public class MainClass {
 
     private static String pathToHDFS= "hdfs://172.18.0.5:54310/output";
 
+    private static String pathToFileTemperature = "hdfs://172.18.0.5:54310/dataset/temperature.csv";
+    private static String pathToFileHumidity = "hdfs://172.18.0.5:54310/dataset/humidity.csv";
+    private static String pathToFileCities = "hdfs://172.18.0.5:54310/dataset/city_attributes.csv";
+    private static String pathToFilePressure = "hdfs://172.18.0.5:54310/dataset/pressure.csv";
+    private static String pathToFileCondition = "hdfs://172.18.0.5:54310/dataset/weather_description.csv";
 
-    private static String pathToFileTemperature = "data/prj1_dataset/temperature.csv";
+
+    /*private static String pathToFileTemperature = "data/prj1_dataset/temperature.csv";
     private static String pathToFileHumidity = "data/prj1_dataset/humidity.csv";
     private static String pathToFileCities = "data/prj1_dataset/city_attributes.csv";
     private static String pathToFilePressure = "data/prj1_dataset/pressure.csv";
-    private static String pathToFileCondition = "data/prj1_dataset/weather_description.csv";
+    private static String pathToFileCondition = "data/prj1_dataset/weather_description.csv";*/
 
 
     public static void main(String[] args) {
 
 
         SparkSession sparkSession= SparkSession.builder()
-                .master("local[*]")
+                //.master("local[*]")
                 .appName("Weather Analyzer")
                 .getOrCreate();
 
@@ -37,7 +43,7 @@ public class MainClass {
         sc.setLogLevel("ERROR");
 
 
-        //Query1.query1(sc,sparkSession,pathToHDFS,pathToFileCondition,pathToFileCities);
+        Query1.query1(sc,sparkSession,pathToHDFS,pathToFileCondition,pathToFileCities);
 
         Long partialPreprocessing = System.currentTimeMillis();
 
