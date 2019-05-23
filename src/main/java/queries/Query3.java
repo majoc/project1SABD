@@ -29,7 +29,7 @@ public class Query3 {
     private static String year2 = "2017";
 
 
-    public static void query3(JavaSparkContext sc, SparkSession sparkSession,JavaRDD<CityInfo> cityRDD, JavaRDD<TemperatureMeasurement> temperatures, Long partialTime, String pathToHDFS) {
+    public static void query3(JavaSparkContext sc, SparkSession sparkSession,JavaRDD<CityInfo> cityRDD, JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> temperatures, Long partialTime, String pathToHDFS) {
 
         //System.setProperty("hadoop.home.dir","C:\\winutils");
 
@@ -42,7 +42,7 @@ public class Query3 {
     }
 
 
-    public static void top3cityMaxDifference( JavaSparkContext sc, SparkSession sparkSession,JavaRDD<CityInfo> cityRDD, JavaRDD<TemperatureMeasurement> temperatures, Long partialTime, String pathToHDFS) {
+    public static void top3cityMaxDifference( JavaSparkContext sc, SparkSession sparkSession,JavaRDD<CityInfo> cityRDD, JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> convertedJoin, Long partialTime, String pathToHDFS) {
 
         Long processingTime= System.currentTimeMillis();
 
@@ -51,8 +51,10 @@ public class Query3 {
         Long cleaningTime= partialTime;
 
         // constructing RDD for subsequent join
-        JavaPairRDD<String,TemperatureMeasurement> cityTemperatures = temperatures.mapToPair(x -> new Tuple2<>(x.getCity(),x));
+       /* JavaPairRDD<String,TemperatureMeasurement> cityTemperatures = temperatures.mapToPair(x -> new Tuple2<>(x.getCity(),x));
         JavaPairRDD<String,CityInfo> cityCityInfo = cityRDD.mapToPair(x -> new Tuple2<>(x.getCityName(),x));
+
+
 
         JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> convertedJoin  = cityTemperatures
                 //performing join operation
@@ -64,7 +66,7 @@ public class Query3 {
                         ConvertDatetime.convert(x._2()._2().getTimezone(),
                         x._2()._1().getDate()),
                         x._2()._1().getTemperature()),
-                        x._2()._2()))).cache();
+                        x._2()._2()))).cache();*/
 
         JavaPairRDD<Tuple3<String,String,String>,Double> temperatureFirstGroup = temperatureMean(convertedJoin,"6","7","8","9");
 

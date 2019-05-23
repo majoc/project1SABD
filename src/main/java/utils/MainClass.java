@@ -2,6 +2,7 @@ package utils;
 
 import entities.CityInfo;
 import entities.TemperatureMeasurement;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
@@ -17,25 +18,25 @@ public class MainClass {
 
     private static String pathToHDFS= "hdfs://172.18.0.5:54310/output";
 
-    private static String pathToFileTemperature = "hdfs://172.18.0.5:54310/dataset/temperature.csv";
+    /*private static String pathToFileTemperature = "hdfs://172.18.0.5:54310/dataset/temperature.csv";
     private static String pathToFileHumidity = "hdfs://172.18.0.5:54310/dataset/humidity.csv";
     private static String pathToFileCities = "hdfs://172.18.0.5:54310/dataset/city_attributes.csv";
     private static String pathToFilePressure = "hdfs://172.18.0.5:54310/dataset/pressure.csv";
-    private static String pathToFileCondition = "hdfs://172.18.0.5:54310/dataset/weather_description.csv";
+    private static String pathToFileCondition = "hdfs://172.18.0.5:54310/dataset/weather_description.csv";*/
 
 
-    /*private static String pathToFileTemperature = "data/prj1_dataset/temperature.csv";
+    private static String pathToFileTemperature = "data/prj1_dataset/temperature.csv";
     private static String pathToFileHumidity = "data/prj1_dataset/humidity.csv";
     private static String pathToFileCities = "data/prj1_dataset/city_attributes.csv";
     private static String pathToFilePressure = "data/prj1_dataset/pressure.csv";
-    private static String pathToFileCondition = "data/prj1_dataset/weather_description.csv";*/
+    private static String pathToFileCondition = "data/prj1_dataset/weather_description.csv";
 
 
     public static void main(String[] args) {
 
 
         SparkSession sparkSession= SparkSession.builder()
-                //.master("local[*]")
+                .master("local[*]")
                 .appName("Weather Analyzer")
                 .getOrCreate();
 
@@ -54,17 +55,18 @@ public class MainClass {
 
         //creating city rdd for query2, filled up with nation info
         JavaRDD<CityInfo> cityRDD= initialCityCleaned.map((Function<String, CityInfo>)
-                s -> ParserCsvCity.parseLine(s,"query2")).cache();
+                s -> ParserCsvCity.parseLine(s,"query2"));
+        cityRDD.cache();
 
         partialPreprocessing=System.currentTimeMillis()-partialPreprocessing;
 
-        Tuple2<JavaRDD<TemperatureMeasurement>, Long>  temperature =ParserCsvTemperature.construct_CleanRDD(sc,pathToFileTemperature);
+        Tuple2<JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>>,Long>  temperature =ParserCsvTemperature.construct_CleanRDD(sc,pathToFileTemperature, cityRDD);
 
         temperature._1().cache();
 
 
 
-        Query2.query2(sc, sparkSession, cityRDD, temperature._1(), temperature._2() + partialPreprocessing, pathToHDFS ,pathToFileHumidity,pathToFilePressure);
+        Query2.query2(sc, sparkSession,cityRDD,temperature._1(), temperature._2() + partialPreprocessing, pathToHDFS ,pathToFileHumidity,pathToFilePressure);
 
         Query3.query3(sc, sparkSession, cityRDD, temperature._1(), temperature._2(), pathToHDFS);
 

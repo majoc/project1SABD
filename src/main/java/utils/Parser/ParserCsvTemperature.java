@@ -1,12 +1,15 @@
 package utils.Parser;
 
 import com.google.common.collect.Lists;
+import entities.CityInfo;
 import entities.TemperatureMeasurement;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
+import utils.ConvertDatetime;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -14,11 +17,14 @@ import java.util.ArrayList;
 public class ParserCsvTemperature {
 
 
-    public static Tuple2<JavaRDD<TemperatureMeasurement>,Long> construct_CleanRDD(JavaSparkContext sc,String pathToFileTemperature){
+    public static Tuple2<JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>>,Long> construct_CleanRDD(JavaSparkContext sc, String pathToFileTemperature, JavaRDD<CityInfo> cities){
 
         Long timepreprocessing=System.currentTimeMillis();
 
         //creating temperature rdd
+
+
+
 
         JavaRDD<String> initialtemperature= sc.textFile(pathToFileTemperature/*"hdfs://localhost:54310/data/temperature.csv"*/);
         String headerCityList=initialtemperature.first();
@@ -52,9 +58,31 @@ public class ParserCsvTemperature {
             return t ;
         });
 
+        //rdds for joining city info(included nation) with measurement instance
+        JavaPairRDD<String,TemperatureMeasurement> cityTemperatures = temperatureRDDclean.mapToPair(x -> new Tuple2<>(x.getCity(),x));
+        JavaPairRDD<String,CityInfo> cityCityInfo = cities.mapToPair(x -> new Tuple2<>(x.getCityName(),x));
+
+
+
+        JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> statRDD=
+                //performing an inner join between measurement rdd  and city info rdd (containing nation information)
+                cityTemperatures.join(cityCityInfo)
+
+
+                        //mapping previous RDD in a new one with converted DateTime and only query relevant info
+                        .mapToPair(x->new Tuple2<>(x._1(),
+                                new Tuple2<>(new TemperatureMeasurement(x._2()._1().getCity(),
+                                        ConvertDatetime.convert(x._2()._2().getTimezone(),
+                                        x._2()._1().getDate()),
+                                        x._2()._1().getTemperature()),
+                                        x._2()._2())));
+
+
+
+
         timepreprocessing=System.currentTimeMillis()-timepreprocessing;
 
-        return new Tuple2<>(temperatureRDDclean,timepreprocessing);
+        return new Tuple2<>(statRDD,timepreprocessing);
 
     }
 

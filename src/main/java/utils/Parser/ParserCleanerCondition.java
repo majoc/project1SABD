@@ -3,16 +3,19 @@ package utils.Parser;
 import com.google.common.collect.Lists;
 import entities.CityInfo;
 import entities.WeatherMeasurement;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
+import scala.Tuple2;
 import scala.Tuple3;
+import utils.ConvertDatetime;
 
 import java.util.ArrayList;
 
 public class ParserCleanerCondition {
-    public static Tuple3<JavaRDD<WeatherMeasurement>,JavaRDD<CityInfo>,Long> construct_cleanRDD(JavaSparkContext sc, String pathcities, String pathcondition){
+    public static Tuple2<JavaRDD<WeatherMeasurement>,Long> construct_cleanRDD(JavaSparkContext sc, String pathcities, String pathcondition){
 
         Long preprocessingTime= System.currentTimeMillis();
 
@@ -53,7 +56,24 @@ public class ParserCleanerCondition {
                 && !x.getDate().equals("")
                 && (x.getMonth().equals("3")||x.getMonth().equals("4")||x.getMonth().equals("5")));
 
+        //We need to join city info contained in CityInfo instances with the measumerement datetime
+        //in order to convert the UTC value in local hour
+        //RDD with city as key and wheather measure object as value
+        JavaPairRDD<String,WeatherMeasurement> measuresRDD = w_meas_notNull.mapToPair(x -> new Tuple2<>(x.getCity(),x));
+        //RDD with city as key and CityInfo object as value
+        JavaPairRDD<String,CityInfo> cityRDD = cityInfo.mapToPair(x -> new Tuple2<>(x.getCityName(),x));
 
-        return new Tuple3<>(w_meas_notNull,cityInfo,System.currentTimeMillis()-preprocessingTime);
+        //Applying inner join between previous RDD and saving relevant info in measurement object
+        //with converted datetime
+        JavaRDD<WeatherMeasurement> measuresConverted = measuresRDD.join(cityRDD)
+                .map((Function<Tuple2<String, Tuple2<WeatherMeasurement, CityInfo>>, WeatherMeasurement>) t -> {
+                    t._2()._1().setCity(t._2()._1().getCity());
+                    t._2()._1().setDate(ConvertDatetime.convert(t._2()._2().getTimezone(),t._2()._1().getDate()));
+                    t._2()._1().setWeather_condition(t._2()._1().getWeather_condition());
+                    return t._2()._1();
+                });
+
+
+        return new Tuple2<>(measuresConverted,System.currentTimeMillis()-preprocessingTime);
     }
 }

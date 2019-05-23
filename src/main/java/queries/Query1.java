@@ -33,36 +33,17 @@ public class Query1 {
         Long processingTime= System.currentTimeMillis();
 
 
-        Tuple3<JavaRDD<WeatherMeasurement>,JavaRDD<CityInfo>,Long> cleaned= ParserCleanerCondition.construct_cleanRDD(jsc,pathToFileCities,pathToFileCondition);
+        Tuple2<JavaRDD<WeatherMeasurement>,Long> cleaned= ParserCleanerCondition.construct_cleanRDD(jsc,pathToFileCities,pathToFileCondition);
 
         //getting cleaning time
-        Long cleaningTime= cleaned._3();
-
-
-        //We need to join city info contained in CityInfo instances with the measumerement datetime
-        //in order to convert the UTC value in local hour
-
-        //RDD with city as key and wheather measure object as value
-        JavaPairRDD<String,WeatherMeasurement> measuresRDD = cleaned._1().mapToPair(x -> new Tuple2<>(x.getCity(),x));
-        //RDD with city as key and CityInfo object as value
-        JavaPairRDD<String,CityInfo> cityRDD = cleaned._2().mapToPair(x -> new Tuple2<>(x.getCityName(),x));
-
-        //Applying inner join between previous RDD and saving relevant info in measurement object
-        //with converted datetime
-        JavaRDD<WeatherMeasurement> measuresConverted = measuresRDD.join(cityRDD)
-            .map((Function<Tuple2<String, Tuple2<WeatherMeasurement, CityInfo>>, WeatherMeasurement>) t -> {
-                t._2()._1().setCity(t._2()._1().getCity());
-                t._2()._1().setDate(ConvertDatetime.convert(t._2()._2().getTimezone(),t._2()._1().getDate()));
-                t._2()._1().setWeather_condition(t._2()._1().getWeather_condition());
-                return t._2()._1();
-            });
+        Long cleaningTime= cleaned._2();
 
 
 
         //Getting all info in the tuple and implementing a word count based on (day,month,year,city,condition) keys,
         // which basically counts
         //the number of hours per day characterized by the key specified weather_condition
-        JavaPairRDD<Tuple5<String,String,String,String,String>,Integer> citiesPerYearcountSkyIsClear= measuresConverted.mapToPair(x->
+        JavaPairRDD<Tuple5<String,String,String,String,String>,Integer> citiesPerYearcountSkyIsClear= cleaned._1().mapToPair(x->
                 new Tuple2<>(new Tuple5<>(x.getDay(),x.getMonth(),x.getYear(),x.getCity(),x.getWeather_condition()),1))
                  .reduceByKey((x,y)->x+y)
 
