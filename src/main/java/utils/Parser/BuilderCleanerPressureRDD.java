@@ -12,7 +12,7 @@ import utils.ConvertDatetime;
 
 import java.util.ArrayList;
 
-public class ParserCleanerPressure {
+public class BuilderCleanerPressureRDD {
 
     public static Tuple2<JavaPairRDD<String,Tuple2<PressureMeasurement,CityInfo>>,Long> construct_cleanRDD(JavaSparkContext sc, String pathToFilePressure, JavaRDD<CityInfo> cities) {
 

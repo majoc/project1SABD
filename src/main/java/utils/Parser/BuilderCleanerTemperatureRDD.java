@@ -14,7 +14,7 @@ import utils.ConvertDatetime;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-public class ParserCsvTemperature {
+public class BuilderCleanerTemperatureRDD {
 
 
     public static Tuple2<JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>>,Long> construct_CleanRDD(JavaSparkContext sc, String pathToFileTemperature, JavaRDD<CityInfo> cities){
@@ -22,9 +22,6 @@ public class ParserCsvTemperature {
         Long timepreprocessing=System.currentTimeMillis();
 
         //creating temperature rdd
-
-
-
 
         JavaRDD<String> initialtemperature= sc.textFile(pathToFileTemperature/*"hdfs://localhost:54310/data/temperature.csv"*/);
         String headerCityList=initialtemperature.first();
@@ -53,7 +50,7 @@ public class ParserCsvTemperature {
         JavaRDD<TemperatureMeasurement> temperatureRDDclean=temperatureFiltered.map((Function<TemperatureMeasurement, TemperatureMeasurement>) t -> {
             String temperature= t.getTemperature();
             if (!t.getTemperature().contains(".")){
-                t.setTemperature(ParserCsvTemperature.fixBadValues(temperature));
+                t.setTemperature(BuilderCleanerTemperatureRDD.fixBadValues(temperature));
             }
             return t ;
         });
@@ -79,10 +76,10 @@ public class ParserCsvTemperature {
 
 
 
+        System.out.println("DENTRO CREAZIONE RDD");
 
-        timepreprocessing=System.currentTimeMillis()-timepreprocessing;
 
-        return new Tuple2<>(statRDD,timepreprocessing);
+        return new Tuple2<>(statRDD,System.currentTimeMillis()- timepreprocessing);
 
     }
 

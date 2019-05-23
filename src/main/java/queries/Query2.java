@@ -11,7 +11,6 @@ import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple4;
 import scala.Tuple5;
-import utils.ConvertDatetime;
 import utils.Parser.*;
 import utils.SaveOutput;
 
@@ -125,7 +124,7 @@ public class Query2 {
     private static void humidityStatistics(JavaRDD<CityInfo> cityRDD, JavaSparkContext sc,SparkSession sparkSession,String pathToHDFS, String path){
 
 
-        Tuple2<JavaPairRDD<String,Tuple2<HumidityMeasurement,CityInfo>>,Long> humidities=ParserCleanerHumidity.construct_cleanRDD(sc,path, cityRDD);
+        Tuple2<JavaPairRDD<String,Tuple2<HumidityMeasurement,CityInfo>>,Long> humidities=BuidlerCleanerHumidityRDD.construct_cleanRDD(sc,path, cityRDD);
 
         //getting cleaning time
         cleaningTime+= humidities._2();
@@ -182,7 +181,7 @@ public class Query2 {
     private static void pressureStatistics(JavaRDD<CityInfo> cityRDD, JavaSparkContext sc,SparkSession sparkSession,String pathToHDFS, String pathToFilePressure) {
 
 
-        Tuple2<JavaPairRDD<String,Tuple2<PressureMeasurement,CityInfo>>,Long> pressures=ParserCleanerPressure.construct_cleanRDD(sc,pathToFilePressure,cityRDD);
+        Tuple2<JavaPairRDD<String,Tuple2<PressureMeasurement,CityInfo>>,Long> pressures=BuilderCleanerPressureRDD.construct_cleanRDD(sc,pathToFilePressure,cityRDD);
 
         //getting cleaning time
         cleaningTime+= pressures._2();

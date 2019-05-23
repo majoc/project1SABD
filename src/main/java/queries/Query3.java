@@ -13,7 +13,6 @@ import org.apache.spark.api.java.function.*;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 import scala.Tuple3;
-import utils.ConvertDatetime;
 import utils.SaveOutput;
 
 
@@ -29,12 +28,12 @@ public class Query3 {
     private static String year2 = "2017";
 
 
-    public static void query3(JavaSparkContext sc, SparkSession sparkSession,JavaRDD<CityInfo> cityRDD, JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> temperatures, Long partialTime, String pathToHDFS) {
+    public static void query3(JavaSparkContext sc, SparkSession sparkSession, JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> temperatures, String pathToHDFS) {
 
         //System.setProperty("hadoop.home.dir","C:\\winutils");
 
 
-        top3cityMaxDifference(sc, sparkSession, cityRDD,temperatures,partialTime,pathToHDFS);
+        top3cityMaxDifference(sc, sparkSession,temperatures,pathToHDFS);
 
 
 
@@ -42,31 +41,14 @@ public class Query3 {
     }
 
 
-    public static void top3cityMaxDifference( JavaSparkContext sc, SparkSession sparkSession,JavaRDD<CityInfo> cityRDD, JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> convertedJoin, Long partialTime, String pathToHDFS) {
+    public static void top3cityMaxDifference( JavaSparkContext sc, SparkSession sparkSession,JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> convertedJoin, String pathToHDFS) {
 
         Long processingTime= System.currentTimeMillis();
 
 
         //getting cleaning time
-        Long cleaningTime= partialTime;
+        Long cleaningTime= 0L;
 
-        // constructing RDD for subsequent join
-       /* JavaPairRDD<String,TemperatureMeasurement> cityTemperatures = temperatures.mapToPair(x -> new Tuple2<>(x.getCity(),x));
-        JavaPairRDD<String,CityInfo> cityCityInfo = cityRDD.mapToPair(x -> new Tuple2<>(x.getCityName(),x));
-
-
-
-        JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>> convertedJoin  = cityTemperatures
-                //performing join operation
-                .join(cityCityInfo)
-
-                //mapping previous RDD into a new one with with converted DateTime
-                .mapToPair(x->new Tuple2<>(x._1(),
-                new Tuple2<>(new TemperatureMeasurement(x._2()._1().getCity(),
-                        ConvertDatetime.convert(x._2()._2().getTimezone(),
-                        x._2()._1().getDate()),
-                        x._2()._1().getTemperature()),
-                        x._2()._2()))).cache();*/
 
         JavaPairRDD<Tuple3<String,String,String>,Double> temperatureFirstGroup = temperatureMean(convertedJoin,"6","7","8","9");
 

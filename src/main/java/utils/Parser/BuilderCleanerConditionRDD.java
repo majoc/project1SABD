@@ -9,27 +9,14 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
-import scala.Tuple3;
 import utils.ConvertDatetime;
 
 import java.util.ArrayList;
 
-public class ParserCleanerCondition {
-    public static Tuple2<JavaRDD<WeatherMeasurement>,Long> construct_cleanRDD(JavaSparkContext sc, String pathcities, String pathcondition){
+public class BuilderCleanerConditionRDD {
+    public static Tuple2<JavaRDD<WeatherMeasurement>,Long> construct_cleanRDD(JavaSparkContext sc, JavaRDD<CityInfo>  cityInfo, String pathcities, String pathcondition){
 
         Long preprocessingTime= System.currentTimeMillis();
-
-        //creating cityRDD
-        JavaRDD<String> initialcity= sc.textFile(pathcities/*"hdfs://localhost:54310/data/city_attributes.csv.COMPLETED"*/);
-        String header=initialcity.first();
-
-
-        //filtering content except header line
-        JavaRDD<String> initialCityCleaned = initialcity.filter(x->!x.equals(header));
-
-        //creating a city object RDD
-        JavaRDD<CityInfo> cityInfo= initialCityCleaned.map((Function<String, CityInfo>)
-                s -> ParserCsvCity.parseLine(s,"query1"));
 
 
         //creating weather_condition rdd

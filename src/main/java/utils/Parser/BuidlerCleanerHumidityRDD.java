@@ -12,7 +12,7 @@ import utils.ConvertDatetime;
 
 import java.util.ArrayList;
 
-public class ParserCleanerHumidity {
+public class BuidlerCleanerHumidityRDD {
 
     public static Tuple2<JavaPairRDD<String,Tuple2<HumidityMeasurement,CityInfo>>,Long> construct_cleanRDD(JavaSparkContext sc,String pathToFileHumidity, JavaRDD<CityInfo> cities) {
 

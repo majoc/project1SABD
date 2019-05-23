@@ -8,7 +8,6 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
-import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.*;
 
 import scala.Tuple2;
@@ -16,7 +15,7 @@ import scala.Tuple3;
 import scala.Tuple5;
 import utils.*;
 
-import utils.Parser.ParserCleanerCondition;
+import utils.Parser.BuilderCleanerConditionRDD;
 
 
 import java.util.ArrayList;
@@ -27,16 +26,16 @@ public class Query1 {
 
 
 
-    public static void query1(JavaSparkContext jsc, SparkSession session,String pathToHDFS,String pathToFileCondition, String pathToFileCities) {
+    public static void query1(JavaSparkContext jsc, JavaRDD<CityInfo> cityRDD,Long preprocessingTime, SparkSession session, String pathToHDFS, String pathToFileCondition, String pathToFileCities) {
 
 
         Long processingTime= System.currentTimeMillis();
 
 
-        Tuple2<JavaRDD<WeatherMeasurement>,Long> cleaned= ParserCleanerCondition.construct_cleanRDD(jsc,pathToFileCities,pathToFileCondition);
+        Tuple2<JavaRDD<WeatherMeasurement>,Long> cleaned= BuilderCleanerConditionRDD.construct_cleanRDD(jsc,cityRDD,pathToFileCities,pathToFileCondition);
 
         //getting cleaning time
-        Long cleaningTime= cleaned._2();
+        Long cleaningTime= cleaned._2()+preprocessingTime;
 
 
 

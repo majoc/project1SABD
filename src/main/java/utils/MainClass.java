@@ -11,8 +11,8 @@ import queries.Query1;
 import queries.Query2;
 import queries.Query3;
 import scala.Tuple2;
-import utils.Parser.ParserCsvCity;
-import utils.Parser.ParserCsvTemperature;
+import utils.Parser.BuilderCleanerCityRDD;
+import utils.Parser.BuilderCleanerTemperatureRDD;
 
 public class MainClass {
 
@@ -23,6 +23,7 @@ public class MainClass {
     private static String pathToFileCities = "hdfs://172.18.0.5:54310/dataset/city_attributes.csv";
     private static String pathToFilePressure = "hdfs://172.18.0.5:54310/dataset/pressure.csv";
     private static String pathToFileCondition = "hdfs://172.18.0.5:54310/dataset/weather_description.csv";*/
+
 
 
     private static String pathToFileTemperature = "data/prj1_dataset/temperature.csv";
@@ -44,31 +45,18 @@ public class MainClass {
         sc.setLogLevel("ERROR");
 
 
-        Query1.query1(sc,sparkSession,pathToHDFS,pathToFileCondition,pathToFileCities);
+        Tuple2<JavaRDD<CityInfo>,Long> cityRDD=BuilderCleanerCityRDD.construct_cleanRDD(sc,pathToFileCities);
+        cityRDD._1().cache();
 
-        Long partialPreprocessing = System.currentTimeMillis();
+        Query1.query1(sc,cityRDD._1(), cityRDD._2(),sparkSession,pathToHDFS,pathToFileCondition,pathToFileCities);
 
-        JavaRDD<String> initialcity= sc.textFile(pathToFileCities);
-        String header=initialcity.first();
-        JavaRDD<String> initialCityCleaned = initialcity.filter(x->!x.equals(header));
-
-
-        //creating city rdd for query2, filled up with nation info
-        JavaRDD<CityInfo> cityRDD= initialCityCleaned.map((Function<String, CityInfo>)
-                s -> ParserCsvCity.parseLine(s,"query2"));
-        cityRDD.cache();
-
-        partialPreprocessing=System.currentTimeMillis()-partialPreprocessing;
-
-        Tuple2<JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>>,Long>  temperature =ParserCsvTemperature.construct_CleanRDD(sc,pathToFileTemperature, cityRDD);
+        Tuple2<JavaPairRDD<String,Tuple2<TemperatureMeasurement,CityInfo>>,Long>  temperature =BuilderCleanerTemperatureRDD.construct_CleanRDD(sc,pathToFileTemperature, cityRDD._1());
 
         temperature._1().cache();
 
+        Query2.query2(sc, sparkSession,cityRDD._1(),temperature._1(), temperature._2(), pathToHDFS ,pathToFileHumidity,pathToFilePressure);
 
-
-        Query2.query2(sc, sparkSession,cityRDD,temperature._1(), temperature._2() + partialPreprocessing, pathToHDFS ,pathToFileHumidity,pathToFilePressure);
-
-        Query3.query3(sc, sparkSession, cityRDD, temperature._1(), temperature._2(), pathToHDFS);
+        Query3.query3(sc, sparkSession,temperature._1(), pathToHDFS);
 
         sc.stop();
 
