@@ -20,9 +20,24 @@ In order to run locally you need the images of the containers used to run the ap
 docker pull effeerre/hadoop
 
 ```  
-the HBase image is harisekhon/hbase 
+The HBase image is harisekhon/hbase 
+
 ```
 docker pull harisekhon/hbase
+
+``` 
+The NiFi image can be pulled in this way
+
+
+```
+docker pull apache/nifi
+
+``` 
+Finally in order to run the spark cluster you need to run the following command, which creates the images of the spark master and of the workers 
+
+```
+cd projectDirectoryPath/docker/docker-spark/docker-spark-cluster-master
+sh build-images.sh
 
 ``` 
 
