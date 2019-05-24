@@ -60,6 +60,12 @@ cd projectDirectoryPath/docker/docker-spark/
 sh start-spark.sh
 
 ``` 
- Once the application has correctly executed
+Once the application has correctly executed you can check the result by browsing the HDFS file system under ``` /output ``` pathe. In order to transfer the output data to HBase you need to switch to the NiFi WebUI again, remove the previous template (CTRL+A and DELETE option on UI) and upload the new ones  ``` projectDirectoryPath/docker/NIFI/TEMPLATE_NIFI/templateQuery1.xml  projectDirectoryPath/docker/NIFI/TEMPLATE_NIFI/templateQuery2.xml projectDirectoryPath/docker/NIFI/TEMPLATE_NIFI/templateQuery3.xml``` then just click play. Once done you should be able to interrogate HBase in order to get otput data. For example from HBase shell you may want to view the content of a particular table.
+
+```
+hbaseshell> t=get_table 'tablename' 
+            t.scan
+
+```
 
 
