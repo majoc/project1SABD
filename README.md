@@ -14,8 +14,17 @@ particularly 1 master container and 3 worker container,a single container execut
 and 3 containers executing Spark cluster, involving 1 master and 2 workers.
 
 ## Prerequisites
-In order to run locally you need the images of the containers used to run the application: the hadoop image is efferre/hadoop, 
-the HBase image is 
+In order to run locally you need the images of the containers used to run the application.The hadoop image is efferre/hadoop 
+
+``` 
+docker pull effeerre/hadoop
+
+```  
+the HBase image is harisekhon/hbase 
+```
+docker pull harisekhon/hbase
+
+``` 
 
 
 ## Running Locally
