@@ -81,7 +81,7 @@
                             <mainClass>utils.MainClass</mainClass>
                         </manifest>
                     </archive>
-                    
+
                 </configuration>
             </plugin>
 

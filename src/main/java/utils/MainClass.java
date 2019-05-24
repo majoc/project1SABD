@@ -25,19 +25,10 @@ public class MainClass {
     private static String pathToFileCondition = "hdfs://172.18.0.5:54310/dataset/weather_description.csv";
 
 
-
-   /* private static String pathToFileTemperature = "data/prj1_dataset/temperature.csv";
-    private static String pathToFileHumidity = "data/prj1_dataset/humidity.csv";
-    private static String pathToFileCities = "data/prj1_dataset/city_attributes.csv";
-    private static String pathToFilePressure = "data/prj1_dataset/pressure.csv";
-    private static String pathToFileCondition = "data/prj1_dataset/weather_description.csv";*/
-
-
     public static void main(String[] args) {
 
 
         SparkSession sparkSession= SparkSession.builder()
-                //.master("local[*]")
                 .appName("Weather Analyzer")
                 .getOrCreate();
 

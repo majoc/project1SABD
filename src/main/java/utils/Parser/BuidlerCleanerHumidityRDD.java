@@ -40,7 +40,8 @@ public class BuidlerCleanerHumidityRDD {
         //filter instances with missing humidity values or malformed
 
         JavaRDD<HumidityMeasurement> filtered= humidityMeasurements.filter(x->(!x.getHumidity().equals("")
-                && !x.getDate().equals("")));
+                && !x.getDate().equals("") && !(Double.parseDouble(x.getHumidity()) < 0.0)) && !(Double.parseDouble(x.getHumidity()) > 100.0));
+
 
         //rdds for joining city info(included nation) with measurement instance
         JavaPairRDD<String,HumidityMeasurement> cityHumidities = filtered.mapToPair(x -> new Tuple2<>(x.getCity(),x));

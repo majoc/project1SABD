@@ -38,7 +38,7 @@ public class BuilderCleanerPressureRDD {
 
         //filter instances with missing pressure values or malformed
         JavaRDD<PressureMeasurement> pressureRDDclean=pressureMeasurements.filter(x->(!x.getPressure().equals("")
-                && !x.getDate().equals("")));
+                && !x.getDate().equals("") && !(Double.parseDouble(x.getPressure()) < 750.0)) && !(Double.parseDouble(x.getPressure()) > 1200.0));
 
         //rdds for joining city info(included nation) with measurement instance
         JavaPairRDD<String,PressureMeasurement> cityPressures = pressureRDDclean.mapToPair(x -> new Tuple2<>(x.getCity(),x));

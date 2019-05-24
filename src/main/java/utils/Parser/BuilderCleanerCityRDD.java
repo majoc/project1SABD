@@ -23,7 +23,7 @@ public class BuilderCleanerCityRDD {
 
         //creating city rdd for query2, filled up with nation info
         JavaRDD<CityInfo> cityRDD= initialCityCleaned.map((Function<String, CityInfo>)
-                s -> BuilderCleanerCityRDD.parseLine(s,"query2"));
+                s -> BuilderCleanerCityRDD.parseLine(s,"query2")).filter(x-> x!=null);
 
         return new Tuple2<>(cityRDD,System.currentTimeMillis()-preprocessingTime);
 
@@ -45,9 +45,14 @@ public class BuilderCleanerCityRDD {
 
         city.setTimeZone();
 
-        //if(id.equals("query2") || id.equals("query3")){
+        if(city.getCityName().equals("") || (city.getLatitude() > 90.0 && city.getLatitude() < -90.0) || (city.getLongitude() > 180.0 && city.getLatitude() < -180.0) ) {
+            city = null;
+        }
+
+        if(city != null)
+
             city.setNation(BuilderCleanerCityRDD.getNationfromCoordinates(city));
-        //}
+
 
         return city;
     }

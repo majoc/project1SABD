@@ -75,10 +75,6 @@ public class BuilderCleanerTemperatureRDD {
                                         x._2()._2())));
 
 
-
-        System.out.println("DENTRO CREAZIONE RDD");
-
-
         return new Tuple2<>(statRDD,System.currentTimeMillis()- timepreprocessing);
 
     }
