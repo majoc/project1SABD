@@ -5,6 +5,7 @@
 - [Description](#Description)
 - [Prerequisites](#Prerequisites)
 - [Running Locally](#Running-Locally)
+- [Execution](#Execution)
 
 
 ## Description
@@ -33,7 +34,7 @@ The NiFi image can be pulled in this way
 docker pull apache/nifi
 
 ``` 
-Finally in order to run the spark cluster you need to run the following command, which creates the images of the spark master and of the workers 
+Finally in order to start the spark cluster you first need to run the following command, which creates the images of the spark master and  workers, building relative dockerfiles.
 
 ```
 cd projectDirectoryPath/docker/docker-spark/docker-spark-cluster-master
@@ -43,13 +44,16 @@ sh build-images.sh
 
 
 ## Running Locally
-The previous container can be started all at once by executing the "start-all.sh" script, which creates the network and start 
+The previous containers can be started all at once by executing the "start-all.sh" script, which creates the network and start 
 all the containers running them in the same network.In order to see if all containers are up and running we can access the 
 respective WebUI: http://localhost:9870 to access hdfs UI, http://localhost:16010/master-status to access HBase web UI, 
 http://spark-master:8080 to access spark master UI and finally http://localhost:9090/nifi to access NiFi Web UI (it may take a while
 for NiFi WebUI to become accessible after the container starts).
 
 
+
+## Execution
+Finally when you are ready to execute
  
 
 
