@@ -57,9 +57,9 @@ Once the previous containers are up and running you can start with data ingestio
 
 ![Upload Template](img/upload.jpg)  
 
-Once the template is loaded you need to add it to the canvas by drag and dropping the folliwing template icon and selecting the newly uploaded template
+Once the template is loaded you need to add it to the canvas by drag and dropping the folliwing template icon located on the upper toolbar and then selecting the newly uploaded template
 
-![Add Template](img/TEMPLATE.png) 
+![Add Template](img/template.png) 
 
 Now you can start the flow by clicking the play button. After a while ingestion should be made and you could see the acquired files into HDFS by browsing the file system via WebUI. Now you can run the application, by typing the following commands
 
