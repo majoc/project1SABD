@@ -2,6 +2,7 @@ package queries;
 
 
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import entities.CityInfo;
@@ -52,7 +53,11 @@ public class Query3 {
 
         JavaPairRDD<Tuple3<String,String,String>,Double> temperatureFirstGroup = temperatureMean(convertedJoin,"6","7","8","9");
 
+        //temperatureFirstGroup.saveAsTextFile("prove3");
+
         JavaPairRDD<Tuple3<String,String,String>,Double> temperatureSecondGroup = temperatureMean(convertedJoin,"1","2","3","4");
+
+        //temperatureFirstGroup.saveAsTextFile("prove4");
 
         //joining the groups value so that we can later do difference
         JavaPairRDD<Tuple2<String,String>, Iterable<Tuple2<String,Double>>> temperatureDiffGrouped= temperatureFirstGroup
@@ -74,6 +79,8 @@ public class Query3 {
                 //grouping all by (nation, year) and caching for subsequent usage
                 .groupByKey().cache();
 
+        //temperatureDiffGrouped.saveAsTextFile("prove5");
+
         //top 3 chart for 2017
         JavaPairRDD<Tuple2<String,String>, ArrayList<Tuple2<String,Double>>> intermediateSecond=temperatureDiffGrouped
 
@@ -86,10 +93,10 @@ public class Query3 {
                 .mapToPair((PairFunction<Tuple2<Tuple2<String, String>, Iterable<Tuple2<String, Double>>>,
                     Tuple2<String, String>,
                     Iterable<Tuple2<String, Double>>>)
-                    t -> new Tuple2<>(t._1(), Iterators.partition(t._2().iterator(),3).next()))
+                    t -> new Tuple2<>(t._1(), Iterables.limit(t._2(),3)))
 
                 //mapping for easier index manipulation
-                .mapToPair(x-> new Tuple2<>(x._1(),Lists.newArrayList(x._2().iterator()))).cache();
+                .mapToPair(x-> new Tuple2<>(x._1(),Lists.newArrayList(x._2().iterator())));
 
 
         //top chart of all cities in 2016
@@ -100,7 +107,8 @@ public class Query3 {
 
                 //this mapping is used to convert the sorted iterable list, relative to year1,
                 //into an array list in order to make easier subsequent index manipulation
-                .mapToPair(x-> new Tuple2<>(x._1(),Lists.newArrayList(x._2().iterator()))).cache();
+                .mapToPair(x-> new Tuple2<>(x._1(),Lists.newArrayList(x._2().iterator())));
+
 
 
 
@@ -196,7 +204,7 @@ public class Query3 {
                         (t1, t2) -> new Tuple2<>(t1._1()+t2._1(),t1._2()+t2._2()));
 
         //return an RDD in which key is the triple (nation, year, city) and the value is the temperature mean
-        return temperatureByKey.mapToPair(x->new Tuple2<>(x._1(),x._2()._1()/x._2()._2()));
+        return temperatureByKey.mapToPair(x->new Tuple2<>(x._1(),x._2()._1()/x._2()._2())).coalesce(1);
 
 
 
