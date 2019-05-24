@@ -63,9 +63,6 @@ public class Query2 {
         s.saveTimes(perfTime,sparkSession,pathHDFS, "times2.csv");
 
 
-        System.out.println("TEMPO PROCESSAMENTO (ms) " +processingTime+ "  TEMPO PREPROCESSING (ms) " + cleaningTime);
-
-
 
 
 

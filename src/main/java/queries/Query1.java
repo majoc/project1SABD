@@ -104,8 +104,6 @@ public class Query1 {
         s.saveTimes(perfTime,session,pathToHDFS,"times1.csv");
 
 
-        System.out.println("TEMPO PROCESSAMENTO (ms) " +processingTime+ "  TEMPO PREPROCESSING (ms) " + cleaningTime);
-
 
 
     }
