@@ -11,7 +11,7 @@
 ## Description
 The project core consists in one jar which contains code and all dependencies, which is executed on a docker containers cluster
 collocated on the same docker network. The involved containers are the following: a set of containers running hadoop cluster ,
-particularly 1 master container and 3 worker container,a single container executing NiFi, a single container executing HBase 
+particularly 1 master container and 3 worker containers,a single container executing NiFi, a single container executing HBase 
 and 3 containers executing Spark cluster, involving 1 master and 2 workers.
 
 ## Prerequisites
@@ -41,7 +41,7 @@ cd {yourprojectDirectoryPath}/docker/docker-spark/docker-spark-cluster-master
 sh build-images.sh
 
 ``` 
-
+NOTE : In order to later run Spark cluster you need to have ``` docker-compose ``` installed.
 
 ## Running Locally
 The previous containers can be started all at once by executing the "start-all.sh" script, which creates the network and start 
