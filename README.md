@@ -53,7 +53,13 @@ for NiFi WebUI to become accessible after the container starts).
 
 
 ## Execution
-Finally when you are ready to execute
- 
+Once the previous container are up and running you can start with data ingestion by opening Nifi WebUI and loading the template under the path ``` projectDirectoryPath/docker/NIFI/TEMPLATE_NIFI/dataIngestionToHDFS.xml ``` . Once the template is loaded you need to add it to the canvas by selecting the template icon. Now you can start the flow by clicking the play button. After a while ingestion should be made and you could see the acquired files into HDFS by browsing the file system via WebUI. Now you can run the application, by typing the following commands
+
+```
+cd projectDirectoryPath/docker/docker-spark/
+sh start-spark.sh
+
+``` 
+ Once the application has correctly executed
 
 
