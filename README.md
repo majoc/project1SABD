@@ -53,7 +53,7 @@ sh start-all.sh
 sh init-hbase.sh
 
 ``` 
-In order to see if the tables have been correctly created navigate through the HBase WebUI at the previous, and make sure they've been created before going into running the application.
+In order to see if the tables have been correctly created navigate through the HBase WebUI at the previous endpoint, and make sure they've been created before going into running the application.
 
 
 ## Running Application
