@@ -66,7 +66,7 @@ Once the template is loaded you need to add it to the canvas by drag and droppin
 ![Add Template](img/template.png) 
 
 
-Now you can start the flow by clicking the play button,in the 'Operate' panel . After a while ingestion should be made and you could see the acquired files into HDFS by browsing the file system via WebUI. Now you can run the application, by typing the following commands
+Now you can start the flow by clicking the play button,in the 'Operate' panel . After a while ingestion should be made and you could see the acquired files into HDFS by browsing the file system via WebUI. Now you can run the application, by typing the following commands (the jar is already located in the expected directory, no need to move anything).
 
 ```
 cd {rootProjectPath}/docker/docker-spark/
@@ -81,7 +81,7 @@ Once done, you should be able to interrogate HBase in order to get otput data. F
 
 ```
 hbase(main) > t=get_table 'Query1' 
-            t.scan
+            > t.scan
 
 ```
 
