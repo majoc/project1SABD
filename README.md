@@ -37,7 +37,7 @@ docker pull apache/nifi
 Finally in order to start the spark cluster you first need to run the following command, which creates the images of the spark master and  workers, building relative dockerfiles.
 
 ```
-cd projectDirectoryPath/docker/docker-spark/docker-spark-cluster-master
+cd {yourprojectDirectoryPath}/docker/docker-spark/docker-spark-cluster-master
 sh build-images.sh
 
 ``` 
@@ -53,14 +53,14 @@ for NiFi WebUI to become accessible after the container starts).
 
 
 ## Execution
-Once the previous container are up and running you can start with data ingestion by opening Nifi WebUI and loading the template under the path ``` projectDirectoryPath/docker/NIFI/TEMPLATE_NIFI/dataIngestionToHDFS.xml ``` . Once the template is loaded you need to add it to the canvas by selecting the template icon. Now you can start the flow by clicking the play button. After a while ingestion should be made and you could see the acquired files into HDFS by browsing the file system via WebUI. Now you can run the application, by typing the following commands
+Once the previous containers are up and running you can start with data ingestion phase by opening Nifi WebUI and loading the template under the path ``` yourprojectDirectoryPath/docker/NIFI/TEMPLATE_NIFI/dataIngestionToHDFS.xml ``` . Once the template is loaded you need to add it to the canvas by drag and dropping the template icon. Now you can start the flow by clicking the play button. After a while ingestion should be made and you could see the acquired files into HDFS by browsing the file system via WebUI. Now you can run the application, by typing the following commands
 
 ```
-cd projectDirectoryPath/docker/docker-spark/
+cd {yourprojectDirectoryPath}/docker/docker-spark/
 sh start-spark.sh
 
 ``` 
-Once the application has correctly executed you can check the result by browsing the HDFS file system under ``` /output ``` pathe. In order to transfer the output data to HBase you need to switch to the NiFi WebUI again, remove the previous template (CTRL+A and DELETE option on UI) and upload the new ones  ``` projectDirectoryPath/docker/NIFI/TEMPLATE_NIFI/templateQuery1.xml  projectDirectoryPath/docker/NIFI/TEMPLATE_NIFI/templateQuery2.xml projectDirectoryPath/docker/NIFI/TEMPLATE_NIFI/templateQuery3.xml``` then just click play. Once done you should be able to interrogate HBase in order to get otput data. For example from HBase shell you may want to view the content of a particular table.
+Once the application has correctly executed you can check the result by browsing the HDFS file system under ``` /output ``` pathe. In order to transfer the output data to HBase you need to switch to the NiFi WebUI again, remove the previous template (CTRL+A and DELETE option on UI) and upload the new ones under the following paths ``` {yourprojectDirectoryPath}/docker/NIFI/TEMPLATE_NIFI/templateQuery1.xml  {yourprojectDirectoryPath}/docker/NIFI/TEMPLATE_NIFI/templateQuery2.xml {yourprojectDirectoryPath}/docker/NIFI/TEMPLATE_NIFI/templateQuery3.xml``` then just click play. Once done, you should be able to interrogate HBase in order to get otput data. For example from HBase shell you may want to view the content of a particular table.
 
 ```
 hbaseshell> t=get_table 'tablename' 
