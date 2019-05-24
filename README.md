@@ -81,7 +81,7 @@ Once done, you should be able to interrogate HBase in order to get otput data. F
 
 ```
 hbase(main) > t=get_table 'Query1' 
-            t.scan
+            > t.scan
 
 ```
 
